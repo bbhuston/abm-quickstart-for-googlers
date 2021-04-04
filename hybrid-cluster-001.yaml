@@ -14,14 +14,14 @@ apiVersion: baremetal.cluster.gke.io/v1
 kind: Cluster
 metadata:
   name: hybrid-cluster-001
-  namespacke: abm-hybrid-cluster-001
+  namespace: abm-hybrid-cluster-001
 spec:
   type: hybrid
   kubevirt:
     useEmulation: false
   anthosBareMetalVersion: 1.7.0
   gkeConnect:
-    projectID: ${PROJECT_ID}
+    projectID: PROJECT_ID
   controlPlane:
     nodePoolSpec:
       clusterName: hybrid-cluster-001
@@ -50,7 +50,7 @@ spec:
   clusterOperations:
     # might need to be this location
     location: us-central1
-    projectID: ${PROJECT_ID}
+    projectID: PROJECT_ID
   storage:
     lvpNodeMounts:
       path: /mnt/localpv-disk
@@ -64,7 +64,7 @@ apiVersion: baremetal.cluster.gke.io/v1
 kind: NodePool
 metadata:
   name: hybrid-cluster-001-node-pool-1
-  namespacke: abm-hybrid-cluster-001
+  namespace: abm-hybrid-cluster-001
 spec:
   clusterName: hybrid-cluster-001
   nodes:
