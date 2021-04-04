@@ -19,7 +19,7 @@ spec:
   type: hybrid
   kubevirt:
     useEmulation: false
-  anthosBareMetalVersion: 1.7.0
+  anthosBareMetalVersion: ABM_VERSION
   gkeConnect:
     projectID: PROJECT_ID
   controlPlane:
