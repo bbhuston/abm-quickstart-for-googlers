@@ -5,7 +5,6 @@
 # SET ANTHOS BARE METAL VARIABLES
 ####################################################################
 
-PROJECT_ID=<Enter your Anthos bare metal GCP Project ID>
 ZONE=us-central1-a
 MACHINE_TYPE=n1-standard-4
 VM_COUNT=10
