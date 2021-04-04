@@ -21,7 +21,7 @@ spec:
     useEmulation: false
   anthosBareMetalVersion: 1.7.0
   gkeConnect:
-    projectID: ${PROJECT_ID}
+    projectID: PROJECT_ID
   controlPlane:
     nodePoolSpec:
       clusterName: hybrid-cluster-001
@@ -50,7 +50,7 @@ spec:
   clusterOperations:
     # might need to be this location
     location: us-central1
-    projectID: ${PROJECT_ID}
+    projectID: PROJECT_ID
   storage:
     lvpNodeMounts:
       path: /mnt/localpv-disk
