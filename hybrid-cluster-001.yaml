@@ -14,7 +14,7 @@ apiVersion: baremetal.cluster.gke.io/v1
 kind: Cluster
 metadata:
   name: hybrid-cluster-001
-  namespacke: abm-hybrid-cluster-001
+  namespace: abm-hybrid-cluster-001
 spec:
   type: hybrid
   kubevirt:
@@ -64,7 +64,7 @@ apiVersion: baremetal.cluster.gke.io/v1
 kind: NodePool
 metadata:
   name: hybrid-cluster-001-node-pool-1
-  namespacke: abm-hybrid-cluster-001
+  namespace: abm-hybrid-cluster-001
 spec:
   clusterName: hybrid-cluster-001
   nodes:
