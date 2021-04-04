@@ -24,3 +24,8 @@ make configure-iam-permissions
 ```
 make create-vms
 ```
+
+##### Prepare a ABM hybrid cluster
+```
+make prepare-hybrid-cluster
+```
