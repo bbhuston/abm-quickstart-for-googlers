@@ -10,6 +10,12 @@ MACHINE_TYPE=n1-standard-4
 VM_COUNT=10
 ABM_VERSION=1.7.0
 
+# Source important variables that need to persist and are easy to forget about
+include utils/env
+
+persist-settings:
+	@echo "PROJECT_ID=${PROJECT_ID}\nUSER_EMAIL=${USER_EMAIL}\n" > utils/env
+
 ####################################################################
 # CONFIGURE GCP PROJECT
 ####################################################################
@@ -94,7 +100,7 @@ prepare-user-cluster-with-metallb:
 	sed -i 's/ABM_VERSION/${ABM_VERSION}/' bmctl-workspace/user-cluster-001/user-cluster-001.yaml
 	sed -i 's/PROJECT_ID/${PROJECT_ID}/' bmctl-workspace/user-cluster-001/user-cluster-001.yaml
 	EOF
-	@gcloud compute ssh root@abm-ws --zone ${ZONE} -- -o ProxyCommand='corp-ssh-helper %h %p' -ServerAliveInterval=30 -o ConnectTimeout=30 << EOF
+	@gcloud compute ssh root@abm-ws --zone ${ZONE} -- -o ProxyCommand='corp-ssh-helper %h %p' -ServerAliveInterval=30 -o ConnectTimeout=30
 	@echo
 	@echo '-----------------------------------------------------------------------------------------------------'
 	@echo
@@ -110,7 +116,6 @@ prepare-user-cluster-with-metallb:
 	@echo
 	@echo
 	@echo '-----------------------------------------------------------------------------------------------------'
-	EOF
 
 prepare-user-cluster-with-gce-lb:
 	# TODO: Add user cluster hydration steps

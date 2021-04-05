@@ -4,7 +4,7 @@ Googlers have the ability to provision self-service Linux VMs called "CloudTop i
 
 ##### Connecting to your CloudTop instance
 
-First, ensure that you have a [CloudTop instance provisioned and powered on.](https://support.google.com/techstop/answer/2662330?hl=en&ref_topic=2683844)  Afterwards, you can connect to it and connect the rest of the ABM provisioning process.
+First, ensure that you have a [CloudTop instance provisioned and powered on.](https://support.google.com/techstop/answer/2662330?hl=en&ref_topic=2683844)  Afterwards, you can connect to it and complete the rest of the ABM provisioning process.
 
 ```
 # Generate a session token to connect to CloudTop
@@ -26,9 +26,13 @@ git clone https://github.com/bbhuston/abm-quickstart-for-googlers.git
 cd abm-quickstart-for-googlers
 ```
 
-##### Set your GCP Project ID
+##### Set your GCP Project settings
 ```
-export PROJECT_ID=<Enter your Anthos bare metal GCP Project ID>
+PROJECT_ID=<Enter your Anthos bare metal GCP Project ID>
+USER_EMAIL=<Enter the email address associated with your GCP project (e.g., benhuston@google.com)>
+
+make persist-settings -e PROJECT_ID=${PROJECT_ID} -e USER_EMAIL=${USER_EMAIL}
+
 ```
 
 ##### Set default GCP Project
@@ -58,7 +62,7 @@ make prepare-hybrid-cluster
 
 ##### Prepare an ABM user cluster that uses MetalLB
 ```
-TODO
+prepare-user-cluster-with-metallb
 ```
 
 ##### Prepare an ABM user cluster that uses GCE LoadBalancer
