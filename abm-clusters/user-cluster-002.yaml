@@ -33,12 +33,12 @@ spec:
     ports:
       controlPlaneLBPort: 443
     vips:
-      controlPlaneVIP: 10.200.1.0
-      ingressVIP: 10.200.1.1
+      controlPlaneVIP: 10.200.0.100
+      ingressVIP: 10.200.0.101
     addressPools:
     - name: pool1
       addresses:
-      - 10.200.1.1-10.200.1.20
+      - 10.200.0.101-10.200.0.120
   clusterOperations:
     # might need to be this location
     location: us-central1
