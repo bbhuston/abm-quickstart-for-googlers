@@ -98,7 +98,7 @@ install-google-identity-login:
 	@gcloud compute ssh root@abm-ws --zone ${ZONE} -- -o ProxyCommand='corp-ssh-helper %h %p' -ServerAliveInterval=30 -o ConnectTimeout=30 << EOF
 	wget -O bmctl-workspace/hybrid-cluster-001/google-identity-login.yaml https://raw.githubusercontent.com/bbhuston/abm-quickstart-for-googlers/feat/GH-7/anthos-features/google-identity-login.yaml
 	sed -i 's/example-user@google.com/${USER_EMAIL}/' bmctl-workspace/hybrid-cluster-001/google-identity-login.yaml
-	kubectl apply -f anthos-features/google-identity-login.yaml --kubeconfig=KUBECONFIG=$HOME/bmctl-workspace/hybrid-cluster-001/hybrid-cluster-001-kubeconfig
+	kubectl apply -f bmctl-workspace/hybrid-cluster-001/google-identity-login.yaml --kubeconfig=/root/bmctl-workspace/hybrid-cluster-001/hybrid-cluster-001-kubeconfig
 	EOF
 
 ####################################################################
