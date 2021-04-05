@@ -127,10 +127,10 @@ prepare-user-cluster-with-metallb:
 
 prepare-user-cluster-with-gce-lb:
 	@gcloud compute ssh root@abm-ws --zone ${ZONE} -- -o ProxyCommand='corp-ssh-helper %h %p' -ServerAliveInterval=30 -o ConnectTimeout=30 << EOF
-	mkdir -p bmctl-workspace/user-cluster-001
-	wget -O bmctl-workspace/user-cluster-001/user-cluster-001.yaml https://raw.githubusercontent.com/bbhuston/abm-quickstart-for-googlers/feat/GH-9/abm-clusters/user-cluster-001.yaml
-	sed -i 's/ABM_VERSION/${ABM_VERSION}/' bmctl-workspace/user-cluster-001/user-cluster-001.yaml
-	sed -i 's/PROJECT_ID/${PROJECT_ID}/' bmctl-workspace/user-cluster-001/user-cluster-001.yaml
+	mkdir -p bmctl-workspace/user-cluster-002
+	wget -O bmctl-workspace/user-cluster-002/user-cluster-002.yaml https://raw.githubusercontent.com/bbhuston/abm-quickstart-for-googlers/feat/GH-9/abm-clusters/user-cluster-002.yaml
+	sed -i 's/ABM_VERSION/${ABM_VERSION}/' bmctl-workspace/user-cluster-002/user-cluster-002.yaml
+	sed -i 's/PROJECT_ID/${PROJECT_ID}/' bmctl-workspace/user-cluster-002/user-cluster-002.yaml
 	EOF
 	@echo
 	@echo '-----------------------------------------------------------------------------------------------------'
@@ -138,18 +138,18 @@ prepare-user-cluster-with-gce-lb:
 	@echo
 	@echo 'You have now connected to the ABM workstation.  To create a user cluster run:'
 	@echo
-	@echo "kubectl apply -f bmctl-workspace/user-cluster-001/user-cluster-001.yaml --kubeconfig=/root/bmctl-workspace/hybrid-cluster-001/hybrid-cluster-001-kubeconfig"
+	@echo "kubectl apply -f bmctl-workspace/user-cluster-002/user-cluster-002.yaml --kubeconfig=/root/bmctl-workspace/hybrid-cluster-001/hybrid-cluster-001-kubeconfig"
 	@echo
 	@echo
 	@echo 'To check the status of the user cluster run:'
 	@echo
-	@echo 'kubectl describe cluster user-cluster-001 -n abm-user-cluster-001  --kubeconfig=/root/bmctl-workspace/hybrid-cluster-001/hybrid-cluster-001-kubeconfig'
+	@echo 'kubectl describe cluster user-cluster-002 -n abm-user-cluster-002  --kubeconfig=/root/bmctl-workspace/hybrid-cluster-001/hybrid-cluster-001-kubeconfig'
 	@echo
 	@echo
 	@echo 'After you have finished creating the ABM user cluster run the following commmands to connect to it.'
 	@echo
-	@echo "kubectl -n abm-user-cluster-001 get secret user-cluster-001-kubeconfig -o 'jsonpath={.data.value}' --kubeconfig=/root/bmctl-workspace/hybrid-cluster-001/hybrid-cluster-001-kubeconfig | base64 -d > /root/bmctl-workspace/user-cluster-001/user-cluster-001-kubeconfig"
-	@echo "export KUBECONFIG=/root/bmctl-workspace/user-cluster-001/user-cluster-001-kubeconfig"
+	@echo "kubectl -n abm-user-cluster-002 get secret user-cluster-002-kubeconfig -o 'jsonpath={.data.value}' --kubeconfig=/root/bmctl-workspace/hybrid-cluster-001/hybrid-cluster-001-kubeconfig | base64 -d > /root/bmctl-workspace/user-cluster-002/user-cluster-002-kubeconfig"
+	@echo "export KUBECONFIG=/root/bmctl-workspace/user-cluster-002/user-cluster-002-kubeconfig"
 	@echo "kubectl get nodes"
 	@echo
 	@echo
@@ -165,6 +165,7 @@ install-google-identity-login:
 	sed -i 's/example-user@google.com/${USER_EMAIL}/' google-identity-login.yaml
 	kubectl apply -f google-identity-login.yaml --kubeconfig=/root/bmctl-workspace/hybrid-cluster-001/hybrid-cluster-001-kubeconfig
 	kubectl apply -f google-identity-login.yaml --kubeconfig=/root/bmctl-workspace/user-cluster-001/user-cluster-001-kubeconfig
+	kubectl apply -f google-identity-login.yaml --kubeconfig=/root/bmctl-workspace/user-cluster-002/user-cluster-002-kubeconfig
 	EOF
 
 ####################################################################
