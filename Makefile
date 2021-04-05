@@ -94,20 +94,23 @@ prepare-user-cluster-with-metallb:
 	sed -i 's/ABM_VERSION/${ABM_VERSION}/' bmctl-workspace/user-cluster-001/user-cluster-001.yaml
 	sed -i 's/PROJECT_ID/${PROJECT_ID}/' bmctl-workspace/user-cluster-001/user-cluster-001.yaml
 	EOF
-	@gcloud compute ssh root@abm-ws --zone ${ZONE} -- -o ProxyCommand='corp-ssh-helper %h %p' -ServerAliveInterval=30 -o ConnectTimeout=30
+	@gcloud compute ssh root@abm-ws --zone ${ZONE} -- -o ProxyCommand='corp-ssh-helper %h %p' -ServerAliveInterval=30 -o ConnectTimeout=30 << EOF
 	@echo
 	@echo '-----------------------------------------------------------------------------------------------------'
 	@echo
 	@echo
-	@echo 'You have now connected to the ABM workstation.  Run "kubectl apply -f bmctl-workspace/user-cluster-001/user-cluster-001.yaml --kubeconfig=/root/bmctl-workspace/hybrid-cluster-001/hybrid-cluster-001-kubeconfig" to create a user cluster.'
+	@echo 'You have now connected to the ABM workstation.  To create a user cluster run:'
 	@echo
-	@echo  'After you have finished creating the ABM user cluster run the following commmands to connect to it.'
+	@echo "kubectl apply -f bmctl-workspace/user-cluster-001/user-cluster-001.yaml --kubeconfig=/root/bmctl-workspace/hybrid-cluster-001/hybrid-cluster-001-kubeconfig"
+	@echo
+	@echo 'After you have finished creating the ABM user cluster run the following commmands to connect to it.'
 	@echo
 	@echo "export KUBECONFIG=/root/bmctl-workspace/user-cluster-001/user-cluster-001-kubeconfig"
 	@echo "kubectl get nodes"
 	@echo
 	@echo
 	@echo '-----------------------------------------------------------------------------------------------------'
+	EOF
 
 prepare-user-cluster-with-gce-lb:
 	# TODO: Add user cluster hydration steps
