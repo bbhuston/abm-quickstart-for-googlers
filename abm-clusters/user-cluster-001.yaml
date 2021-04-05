@@ -1,0 +1,63 @@
+---
+apiVersion: v1
+kind: Namespace
+metadata:
+  name: abm-user-cluster-001
+---
+apiVersion: baremetal.cluster.gke.io/v1
+kind: Cluster
+metadata:
+  name: user-cluster-001
+  namespace: abm-user-cluster-001
+spec:
+  type: user
+  kubevirt:
+    useEmulation: false
+  anthosBareMetalVersion: ABM_VERSION
+  gkeConnect:
+    projectID: PROJECT_ID
+  controlPlane:
+    nodePoolSpec:
+      clusterName: user-cluster-001
+      nodes:
+      - address: 10.200.0.8
+  clusterNetwork:
+    pods:
+      cidrBlocks:
+      - 192.168.0.0/16
+    services:
+      cidrBlocks:
+      - 172.26.232.0/24
+  loadBalancer:
+    mode: bundled
+    ports:
+      controlPlaneLBPort: 443
+    vips:
+      controlPlaneVIP: 10.200.0.79
+      ingressVIP: 10.200.0.80
+    addressPools:
+    - name: pool1
+      addresses:
+      - 10.200.0.80-10.200.0.99
+  clusterOperations:
+    # might need to be this location
+    location: us-central1
+    projectID: PROJECT_ID
+  storage:
+    lvpNodeMounts:
+      path: /mnt/localpv-disk
+      storageClassName: node-disk
+    lvpShare:
+      numPVUnderSharedPath: 5
+      path: /mnt/localpv-share
+      storageClassName: standard
+---
+apiVersion: baremetal.cluster.gke.io/v1
+kind: NodePool
+metadata:
+  name: user-cluster-001-node-pool-1
+  namespace: abm-user-cluster-001
+spec:
+  clusterName: user-cluster-001
+  nodes:
+  - address: 10.200.0.9
