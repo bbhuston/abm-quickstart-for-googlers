@@ -72,6 +72,5 @@ TODO
 
 ##### Configure Google Identity Login
 ```
-export USER_EMAIL=<Enter the email address associated with your GCP project (e.g., benhuston@google.com)>
 make install-google-identity-login
 ```

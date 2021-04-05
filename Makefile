@@ -14,7 +14,8 @@ ABM_VERSION=1.7.0
 include utils/env
 
 persist-settings:
-	@echo "PROJECT_ID=${PROJECT_ID}\nUSER_EMAIL=${USER_EMAIL}\n" > utils/env
+	@echo "PROJECT_ID=${PROJECT_ID}" > utils/env
+	@echo "USER_EMAIL=${USER_EMAIL}" >> utils/env
 
 ####################################################################
 # CONFIGURE GCP PROJECT
