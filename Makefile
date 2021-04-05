@@ -5,7 +5,6 @@
 # SET ANTHOS BARE METAL VARIABLES
 ####################################################################
 
-PROJECT_ID=<Enter your Anthos bare metal GCP Project ID>
 ZONE=us-central1-a
 MACHINE_TYPE=n1-standard-4
 VM_COUNT=10
@@ -69,22 +68,41 @@ delete-vms:
 prepare-hybrid-cluster:
 	@gcloud compute ssh root@abm-ws --zone ${ZONE} -- -o ProxyCommand='corp-ssh-helper %h %p' -ServerAliveInterval=30 -o ConnectTimeout=30 << EOF
 	mkdir -p bmctl-workspace/hybrid-cluster-001
-	wget -O bmctl-workspace/hybrid-cluster-001/hybrid-cluster-001.yaml https://raw.githubusercontent.com/bbhuston/abm-quickstart-for-googlers/main/hybrid-cluster-001.yaml
+	wget -O bmctl-workspace/hybrid-cluster-001/hybrid-cluster-001.yaml https://raw.githubusercontent.com/bbhuston/abm-quickstart-for-googlers/main/abm-clusters/hybrid-cluster-001.yaml
 	sed -i 's/ABM_VERSION/${ABM_VERSION}/' bmctl-workspace/hybrid-cluster-001/hybrid-cluster-001.yaml
 	sed -i 's/PROJECT_ID/${PROJECT_ID}/' bmctl-workspace/hybrid-cluster-001/hybrid-cluster-001.yaml
 	EOF
+	@gcloud compute ssh root@abm-ws --zone ${ZONE} -- -o ProxyCommand='corp-ssh-helper %h %p' -ServerAliveInterval=30 -o ConnectTimeout=30
 	@echo
 	@echo '-----------------------------------------------------------------------------------------------------'
 	@echo
 	@echo
 	@echo 'You have now connected to the ABM workstation.  Run "bmctl create cluster -c hybrid-cluster-001" to create a hybrid cluster.'
 	@echo
+	@echo  'After you have finished creating the ABM hybrid cluster run the following commmands to connect to it.'
+	@echo
+	@echo "export KUBECONFIG=$HOME/bmctl-workspace/hybrid-cluster-001/hybrid-cluster-001-kubeconfig"
+	@echo "kubectl get nodes"
+	@echo
 	@echo
 	@echo '-----------------------------------------------------------------------------------------------------'
-	@gcloud compute ssh root@abm-ws --zone ${ZONE} -- -o ProxyCommand='corp-ssh-helper %h %p' -ServerAliveInterval=30 -o ConnectTimeout=30
 
-prepare-user-clusters:
+prepare-user-cluster-with-metallb:
 	# TODO: Add user cluster hydration steps
+
+prepare-user-cluster-with-gce-lb:
+	# TODO: Add user cluster hydration steps
+
+####################################################################
+# INSTALL ANTHOS FEATUTES
+####################################################################
+
+install-google-identity-login:
+	@gcloud compute ssh root@abm-ws --zone ${ZONE} -- -o ProxyCommand='corp-ssh-helper %h %p' -ServerAliveInterval=30 -o ConnectTimeout=30 << EOF
+	wget -O bmctl-workspace/hybrid-cluster-001/google-identity-login.yaml https://raw.githubusercontent.com/bbhuston/abm-quickstart-for-googlers/main/anthos-features/google-identity-login.yaml
+	sed -i 's/example-user@google.com/${USER_EMAIL}/' bmctl-workspace/hybrid-cluster-001/google-identity-login.yaml
+	kubectl apply -f bmctl-workspace/hybrid-cluster-001/google-identity-login.yaml --kubeconfig=/root/bmctl-workspace/hybrid-cluster-001/hybrid-cluster-001-kubeconfig
+	EOF
 
 ####################################################################
 # ANTHOS BARE METAL WORKSTATION UTILS
