@@ -94,7 +94,7 @@ prepare-user-cluster-with-gce-lb:
 	# TODO: Add user cluster hydration steps
 
 ####################################################################
-# INSTALL ANTHOS FEATUTES
+# INSTALL ANTHOS FEATURES
 ####################################################################
 
 install-google-identity-login:
