@@ -11,4 +11,5 @@ steps:
     set -x && \
     export KUBECONFIG="$(pwd)/gateway-kubeconfig" && \
     gcloud beta container hub memberships get-credentials ${_CLUSTER_NAME} && \
+    cat $KUBECONFIG && \
     kubectl --kubeconfig gateway-kubeconfig apply -f ${_MANIFEST_PATH}
