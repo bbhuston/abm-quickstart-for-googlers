@@ -68,6 +68,9 @@ delete-vms:
 	    gcloud compute instances delete $$vm --zone=${ZONE} --quiet
 	done
 
+delete-abm-service-acount-keys:
+	# TODO: add gcloud commands to remove stale keys
+
 ####################################################################
 # ANTHOS BARE METAL CLUSTER PREPARATION
 ####################################################################
