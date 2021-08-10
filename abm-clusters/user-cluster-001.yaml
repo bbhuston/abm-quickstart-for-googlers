@@ -13,8 +13,7 @@ spec:
   type: user
   kubevirt:
     useEmulation: true
-#  anthosBareMetalVersion: ABM_VERSION
-  anthosBareMetalVersion: 1.8.0
+  anthosBareMetalVersion: ABM_VERSION
   gkeConnect:
     projectID: PROJECT_ID
   controlPlane:
