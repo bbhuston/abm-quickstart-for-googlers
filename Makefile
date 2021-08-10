@@ -83,7 +83,6 @@ prepare-hybrid-cluster:
 	sed -i 's/ABM_VERSION/${ABM_VERSION}/' bmctl-workspace/hybrid-cluster-001/hybrid-cluster-001.yaml
 	sed -i 's/PROJECT_ID/${PROJECT_ID}/' bmctl-workspace/hybrid-cluster-001/hybrid-cluster-001.yaml
 	EOF
-	@gcloud compute ssh root@abm-ws --zone ${ZONE} -- -o ProxyCommand='corp-ssh-helper %h %p' -ServerAliveInterval=30 -o ConnectTimeout=30
 	@echo
 	@echo '-----------------------------------------------------------------------------------------------------'
 	@echo
@@ -97,6 +96,7 @@ prepare-hybrid-cluster:
 	@echo
 	@echo
 	@echo '-----------------------------------------------------------------------------------------------------'
+	@gcloud compute ssh root@abm-ws --zone ${ZONE} -- -o ProxyCommand='corp-ssh-helper %h %p' -ServerAliveInterval=30 -o ConnectTimeout=30
 
 prepare-user-cluster-with-metallb:
 	@gcloud compute ssh root@abm-ws --zone ${ZONE} -- -o ProxyCommand='corp-ssh-helper %h %p' -ServerAliveInterval=30 -o ConnectTimeout=30 << EOF
