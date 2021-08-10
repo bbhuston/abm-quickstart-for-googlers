@@ -65,3 +65,4 @@ spec:
   clusterName: user-cluster-001
   nodes:
   - address: 10.200.0.9
+  - address: 10.200.0.10

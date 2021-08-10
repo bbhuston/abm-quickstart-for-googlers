@@ -20,7 +20,7 @@ spec:
     nodePoolSpec:
       clusterName: user-cluster-002
       nodes:
-      - address: 10.200.0.10
+      - address: 10.200.0.11
   clusterNetwork:
     pods:
       cidrBlocks:
@@ -64,5 +64,4 @@ metadata:
 spec:
   clusterName: user-cluster-002
   nodes:
-  - address: 10.200.0.11
   - address: 10.200.0.12
