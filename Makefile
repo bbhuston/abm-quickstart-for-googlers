@@ -87,7 +87,7 @@ prepare-hybrid-cluster:
 	@echo '-----------------------------------------------------------------------------------------------------'
 	@echo
 	@echo
-	@echo 'You have now connected to the ABM workstation.  Run "bmctl create cluster -c hybrid-cluster-001 --force" to create a hybrid cluster.'
+	@echo 'You have now connected to the ABM workstation.  Run "bmctl create cluster -c hybrid-cluster-001" to create a hybrid cluster.'
 	@echo
 	@echo  'After you have finished creating the ABM hybrid cluster run the following commmands to connect to it.'
 	@echo
