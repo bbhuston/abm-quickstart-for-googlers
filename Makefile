@@ -9,6 +9,7 @@ ZONE=us-central1-a
 MACHINE_TYPE=n1-standard-4
 VM_COUNT=10
 ABM_VERSION=1.8.2
+BRANCH=feat/GH-9
 
 # Source important variables that need to persist and are easy to forget about
 include utils/env
@@ -78,7 +79,7 @@ delete-abm-service-acount-keys:
 prepare-hybrid-cluster:
 	@gcloud compute ssh root@abm-ws --zone ${ZONE} -- -o ProxyCommand='corp-ssh-helper %h %p' -ServerAliveInterval=30 -o ConnectTimeout=30 << EOF
 	mkdir -p bmctl-workspace/hybrid-cluster-001
-	wget -O bmctl-workspace/hybrid-cluster-001/hybrid-cluster-001.yaml https://raw.githubusercontent.com/bbhuston/abm-quickstart-for-googlers/main/abm-clusters/hybrid-cluster-001.yaml
+	wget -O bmctl-workspace/hybrid-cluster-001/hybrid-cluster-001.yaml https://raw.githubusercontent.com/bbhuston/abm-quickstart-for-googlers/${BRANCH}/abm-clusters/hybrid-cluster-001.yaml
 	sed -i 's/ABM_VERSION/${ABM_VERSION}/' bmctl-workspace/hybrid-cluster-001/hybrid-cluster-001.yaml
 	sed -i 's/PROJECT_ID/${PROJECT_ID}/' bmctl-workspace/hybrid-cluster-001/hybrid-cluster-001.yaml
 	EOF
@@ -100,7 +101,7 @@ prepare-hybrid-cluster:
 prepare-user-cluster-with-metallb:
 	@gcloud compute ssh root@abm-ws --zone ${ZONE} -- -o ProxyCommand='corp-ssh-helper %h %p' -ServerAliveInterval=30 -o ConnectTimeout=30 << EOF
 	mkdir -p bmctl-workspace/user-cluster-001
-	wget -O bmctl-workspace/user-cluster-001/user-cluster-001.yaml https://raw.githubusercontent.com/bbhuston/abm-quickstart-for-googlers/feat/GH-9/abm-clusters/user-cluster-001.yaml
+	wget -O bmctl-workspace/user-cluster-001/user-cluster-001.yaml https://raw.githubusercontent.com/bbhuston/abm-quickstart-for-googlers/${BRANCH}/abm-clusters/user-cluster-001.yaml
 	sed -i 's/ABM_VERSION/${ABM_VERSION}/' bmctl-workspace/user-cluster-001/user-cluster-001.yaml
 	sed -i 's/PROJECT_ID/${PROJECT_ID}/' bmctl-workspace/user-cluster-001/user-cluster-001.yaml
 	EOF
@@ -131,7 +132,7 @@ prepare-user-cluster-with-metallb:
 prepare-user-cluster-with-gce-lb:
 	@gcloud compute ssh root@abm-ws --zone ${ZONE} -- -o ProxyCommand='corp-ssh-helper %h %p' -ServerAliveInterval=30 -o ConnectTimeout=30 << EOF
 	mkdir -p bmctl-workspace/user-cluster-002
-	wget -O bmctl-workspace/user-cluster-002/user-cluster-002.yaml https://raw.githubusercontent.com/bbhuston/abm-quickstart-for-googlers/feat/GH-9/abm-clusters/user-cluster-002.yaml
+	wget -O bmctl-workspace/user-cluster-002/user-cluster-002.yaml https://raw.githubusercontent.com/bbhuston/abm-quickstart-for-googlers/${BRANCH}/abm-clusters/user-cluster-002.yaml
 	sed -i 's/ABM_VERSION/${ABM_VERSION}/' bmctl-workspace/user-cluster-002/user-cluster-002.yaml
 	sed -i 's/PROJECT_ID/${PROJECT_ID}/' bmctl-workspace/user-cluster-002/user-cluster-002.yaml
 	EOF
@@ -158,13 +159,14 @@ prepare-user-cluster-with-gce-lb:
 	@echo
 	@echo '-----------------------------------------------------------------------------------------------------'
 	@gcloud compute ssh root@abm-ws --zone ${ZONE} -- -o ProxyCommand='corp-ssh-helper %h %p' -ServerAliveInterval=30 -o ConnectTimeout=30
+
 ####################################################################
 # INSTALL ANTHOS FEATURES
 ####################################################################
 
 install-google-identity-login:
 	@gcloud compute ssh root@abm-ws --zone ${ZONE} -- -o ProxyCommand='corp-ssh-helper %h %p' -ServerAliveInterval=30 -o ConnectTimeout=30 << EOF
-	wget -O google-identity-login.yaml https://raw.githubusercontent.com/bbhuston/abm-quickstart-for-googlers/main/anthos-features/google-identity-login.yaml
+	wget -O google-identity-login.yaml https://raw.githubusercontent.com/bbhuston/abm-quickstart-for-googlers/${BRANCH}/anthos-features/google-identity-login.yaml
 	sed -i 's/example-user@google.com/${USER_EMAIL}/' google-identity-login.yaml
 	kubectl apply -f google-identity-login.yaml --kubeconfig=/root/bmctl-workspace/hybrid-cluster-001/hybrid-cluster-001-kubeconfig
 	kubectl apply -f google-identity-login.yaml --kubeconfig=/root/bmctl-workspace/user-cluster-001/user-cluster-001-kubeconfig
