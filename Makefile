@@ -87,7 +87,7 @@ prepare-hybrid-cluster:
 	@echo '-----------------------------------------------------------------------------------------------------'
 	@echo
 	@echo
-	@echo 'You have now connected to the ABM workstation.  Run "bmctl create cluster -c hybrid-cluster-001" to create a hybrid cluster.'
+	@echo 'You have now connected to the ABM workstation.  Run "bmctl create cluster -c hybrid-cluster-001 --force" to create a hybrid cluster.'
 	@echo
 	@echo  'After you have finished creating the ABM hybrid cluster run the following commmands to connect to it.'
 	@echo
@@ -181,4 +181,10 @@ connect-to-abm-workstation:
 uninstall-hybrid-cluster:
 	@gcloud compute ssh root@abm-ws --zone ${ZONE} -- -o ProxyCommand='corp-ssh-helper %h %p' -ServerAliveInterval=30 -o ConnectTimeout=30 < EOF
 	bmctl reset --cluster hybrid-cluster-001
+	EOF
+
+test-hybrid-cluster-connection:
+	@gcloud compute ssh root@abm-ws --zone ${ZONE} -- -o ProxyCommand='corp-ssh-helper %h %p' -ServerAliveInterval=30 -o ConnectTimeout=30 < EOF
+	kubectl cluster-info --kubeconfig=/root/bmctl-workspace/hybrid-cluster-001/hybrid-cluster-001-kubeconfig
+	kubectl get nodes --kubeconfig=/root/bmctl-workspace/hybrid-cluster-001/hybrid-cluster-001-kubeconfig
 	EOF
