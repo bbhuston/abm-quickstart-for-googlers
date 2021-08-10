@@ -177,3 +177,8 @@ install-google-identity-login:
 
 connect-to-abm-workstation:
 	@gcloud compute ssh root@abm-ws --zone ${ZONE} -- -o ProxyCommand='corp-ssh-helper %h %p' -ServerAliveInterval=30 -o ConnectTimeout=30
+
+uninstall-hybrid-cluster:
+	@gcloud compute ssh root@abm-ws --zone ${ZONE} -- -o ProxyCommand='corp-ssh-helper %h %p' -ServerAliveInterval=30 -o ConnectTimeout=30 < EOF
+	bmctl reset --cluster hybrid-cluster-001
+	EOF
