@@ -66,5 +66,5 @@ make prepare-hybrid-cluster
 
 ##### Configure Google Identity Login
 ```
-make configure-google-identity-login
+make google-identity-login
 ```

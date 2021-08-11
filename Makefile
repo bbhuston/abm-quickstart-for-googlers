@@ -86,7 +86,7 @@ delete-vms:  ##   Delete all GCE instances in the current zone
 delete-abm-service-acount-keys:
 	# TODO: add gcloud commands to remove stale keys
 
-##@ Preparing Anthos Bare Metal Clusters
+##@ Preparing ABM Clusters
 
 prepare-hybrid-cluster:  ##   Copy a hybrid cluster manifest to the workstation
 	@gcloud compute ssh root@abm-ws --zone ${ZONE} -- -o ProxyCommand='corp-ssh-helper %h %p' -ServerAliveInterval=30 -o ConnectTimeout=30 << EOF
@@ -112,24 +112,24 @@ prepare-hybrid-cluster:  ##   Copy a hybrid cluster manifest to the workstation
 
 ##@ Install Anthos Features
 
-configure-google-identity-login:
+google-identity-login:  ##   Enable Google Identity Login
 	@gcloud compute ssh root@abm-ws --zone ${ZONE} -- -o ProxyCommand='corp-ssh-helper %h %p' -ServerAliveInterval=30 -o ConnectTimeout=30 << EOF
 	wget -O google-identity-login.yaml https://raw.githubusercontent.com/bbhuston/abm-quickstart-for-googlers/${BRANCH}/anthos-features/google-identity-login.yaml
 	sed -i 's/example-user@google.com/${USER_EMAIL}/' google-identity-login.yaml
 	kubectl apply -f google-identity-login.yaml --kubeconfig=/root/bmctl-workspace/hybrid-cluster-001/hybrid-cluster-001-kubeconfig
 	EOF
 
-##@ ABM Workstation Utils
+##@ Workstation Utils
 
-connect-to-abm-workstation:
+connect-to-workstation:  ##   Connect the ABM workstation from Cloudtop
 	@gcloud compute ssh root@abm-ws --zone ${ZONE} -- -o ProxyCommand='corp-ssh-helper %h %p' -ServerAliveInterval=30 -o ConnectTimeout=30
 
-uninstall-hybrid-cluster:
+uninstall-hybrid-cluster:  ##   Safely uninstall the hybrid cluster components
 	@gcloud compute ssh root@abm-ws --zone ${ZONE} -- -o ProxyCommand='corp-ssh-helper %h %p' -ServerAliveInterval=30 -o ConnectTimeout=30 << EOF
 	bmctl reset --cluster hybrid-cluster-001
 	EOF
 
-test-hybrid-cluster-connection:
+test-hybrid-connection:  ##   Confirm the hybrid cluster is active
 	@gcloud compute ssh root@abm-ws --zone ${ZONE} -- -o ProxyCommand='corp-ssh-helper %h %p' -ServerAliveInterval=30 -o ConnectTimeout=30 << EOF
 	kubectl cluster-info --kubeconfig=/root/bmctl-workspace/hybrid-cluster-001/hybrid-cluster-001-kubeconfig
 	kubectl get nodes --kubeconfig=/root/bmctl-workspace/hybrid-cluster-001/hybrid-cluster-001-kubeconfig
