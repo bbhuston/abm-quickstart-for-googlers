@@ -18,7 +18,7 @@ metadata:
 spec:
   type: hybrid
   kubevirt:
-    useEmulation: false
+    useEmulation: true
   anthosBareMetalVersion: ABM_VERSION
   gkeConnect:
     projectID: PROJECT_ID
@@ -59,6 +59,10 @@ spec:
       numPVUnderSharedPath: 5
       path: /mnt/localpv-share
       storageClassName: standard
+  nodeConfig:
+    podDensity:
+      maxPodsPerNode: 250
+    containerRuntime: containerd
 ---
 apiVersion: baremetal.cluster.gke.io/v1
 kind: NodePool

@@ -1,11 +1,5 @@
 # Modified from: https://cloud.google.com/anthos/clusters/docs/bare-metal/1.6/try/gce-vms
-# IMPORTANT:
-# - Create a GCP project must be under `gcct-teams` folder in google.com Org
-# - Launch a cloudtop linux instance
-# - Run `gcert` on your cloudtop instancae before running steps below
-# - ssh into your cloudtop instance by running: `ssh <your_ldap>.c.googlers.com`
-# - Run all the following commands from your CloudTop instance.
-# - All shell commands use EXTRA_SSH_ARGS, which will allow shell provisioning to properly function in a google.com GCP env
+# NOTES: All shell commands use EXTRA_SSH_ARGS, which will allow shell provisioning to properly function in a google.com GCP environment
 
 # Configure your GCP project
 export PROJECT_ID=$1

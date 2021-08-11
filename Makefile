@@ -8,7 +8,15 @@
 ZONE=us-central1-a
 MACHINE_TYPE=n1-standard-4
 VM_COUNT=10
-ABM_VERSION=1.7.0
+ABM_VERSION=1.8.2
+BRANCH=v0.1.0
+
+# Source important variables that need to persist and are easy to forget about
+include utils/env
+
+persist-settings:
+	@echo "PROJECT_ID=${PROJECT_ID}" > utils/env
+	@echo "USER_EMAIL=${USER_EMAIL}" >> utils/env
 
 ####################################################################
 # CONFIGURE GCP PROJECT
@@ -61,6 +69,9 @@ delete-vms:
 	    gcloud compute instances delete $$vm --zone=${ZONE} --quiet
 	done
 
+delete-abm-service-acount-keys:
+	# TODO: add gcloud commands to remove stale keys
+
 ####################################################################
 # ANTHOS BARE METAL CLUSTER PREPARATION
 ####################################################################
@@ -68,11 +79,10 @@ delete-vms:
 prepare-hybrid-cluster:
 	@gcloud compute ssh root@abm-ws --zone ${ZONE} -- -o ProxyCommand='corp-ssh-helper %h %p' -ServerAliveInterval=30 -o ConnectTimeout=30 << EOF
 	mkdir -p bmctl-workspace/hybrid-cluster-001
-	wget -O bmctl-workspace/hybrid-cluster-001/hybrid-cluster-001.yaml https://raw.githubusercontent.com/bbhuston/abm-quickstart-for-googlers/main/abm-clusters/hybrid-cluster-001.yaml
+	wget -O bmctl-workspace/hybrid-cluster-001/hybrid-cluster-001.yaml https://raw.githubusercontent.com/bbhuston/abm-quickstart-for-googlers/${BRANCH}/abm-clusters/hybrid-cluster-001.yaml
 	sed -i 's/ABM_VERSION/${ABM_VERSION}/' bmctl-workspace/hybrid-cluster-001/hybrid-cluster-001.yaml
 	sed -i 's/PROJECT_ID/${PROJECT_ID}/' bmctl-workspace/hybrid-cluster-001/hybrid-cluster-001.yaml
 	EOF
-	@gcloud compute ssh root@abm-ws --zone ${ZONE} -- -o ProxyCommand='corp-ssh-helper %h %p' -ServerAliveInterval=30 -o ConnectTimeout=30
 	@echo
 	@echo '-----------------------------------------------------------------------------------------------------'
 	@echo
@@ -81,27 +91,22 @@ prepare-hybrid-cluster:
 	@echo
 	@echo  'After you have finished creating the ABM hybrid cluster run the following commmands to connect to it.'
 	@echo
-	@echo "export KUBECONFIG=$HOME/bmctl-workspace/hybrid-cluster-001/hybrid-cluster-001-kubeconfig"
+	@echo "export KUBECONFIG=/root/bmctl-workspace/hybrid-cluster-001/hybrid-cluster-001-kubeconfig"
 	@echo "kubectl get nodes"
 	@echo
 	@echo
 	@echo '-----------------------------------------------------------------------------------------------------'
-
-prepare-user-cluster-with-metallb:
-	# TODO: Add user cluster hydration steps
-
-prepare-user-cluster-with-gce-lb:
-	# TODO: Add user cluster hydration steps
+	@gcloud compute ssh root@abm-ws --zone ${ZONE} -- -o ProxyCommand='corp-ssh-helper %h %p' -ServerAliveInterval=30 -o ConnectTimeout=30
 
 ####################################################################
-# INSTALL ANTHOS FEATUTES
+# INSTALL ANTHOS FEATURES
 ####################################################################
 
-install-google-identity-login:
+configure-google-identity-login:
 	@gcloud compute ssh root@abm-ws --zone ${ZONE} -- -o ProxyCommand='corp-ssh-helper %h %p' -ServerAliveInterval=30 -o ConnectTimeout=30 << EOF
-	wget -O bmctl-workspace/hybrid-cluster-001/google-identity-login.yaml https://raw.githubusercontent.com/bbhuston/abm-quickstart-for-googlers/main/anthos-features/google-identity-login.yaml
-	sed -i 's/example-user@google.com/${USER_EMAIL}/' bmctl-workspace/hybrid-cluster-001/google-identity-login.yaml
-	kubectl apply -f bmctl-workspace/hybrid-cluster-001/google-identity-login.yaml --kubeconfig=/root/bmctl-workspace/hybrid-cluster-001/hybrid-cluster-001-kubeconfig
+	wget -O google-identity-login.yaml https://raw.githubusercontent.com/bbhuston/abm-quickstart-for-googlers/${BRANCH}/anthos-features/google-identity-login.yaml
+	sed -i 's/example-user@google.com/${USER_EMAIL}/' google-identity-login.yaml
+	kubectl apply -f google-identity-login.yaml --kubeconfig=/root/bmctl-workspace/hybrid-cluster-001/hybrid-cluster-001-kubeconfig
 	EOF
 
 ####################################################################
@@ -110,3 +115,14 @@ install-google-identity-login:
 
 connect-to-abm-workstation:
 	@gcloud compute ssh root@abm-ws --zone ${ZONE} -- -o ProxyCommand='corp-ssh-helper %h %p' -ServerAliveInterval=30 -o ConnectTimeout=30
+
+uninstall-hybrid-cluster:
+	@gcloud compute ssh root@abm-ws --zone ${ZONE} -- -o ProxyCommand='corp-ssh-helper %h %p' -ServerAliveInterval=30 -o ConnectTimeout=30 << EOF
+	bmctl reset --cluster hybrid-cluster-001
+	EOF
+
+test-hybrid-cluster-connection:
+	@gcloud compute ssh root@abm-ws --zone ${ZONE} -- -o ProxyCommand='corp-ssh-helper %h %p' -ServerAliveInterval=30 -o ConnectTimeout=30 << EOF
+	kubectl cluster-info --kubeconfig=/root/bmctl-workspace/hybrid-cluster-001/hybrid-cluster-001-kubeconfig
+	kubectl get nodes --kubeconfig=/root/bmctl-workspace/hybrid-cluster-001/hybrid-cluster-001-kubeconfig
+	EOF
