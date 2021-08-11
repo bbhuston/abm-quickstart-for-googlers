@@ -26,18 +26,22 @@ git clone https://github.com/bbhuston/abm-quickstart-for-googlers.git
 cd abm-quickstart-for-googlers
 ```
 
+##### Check out available commands 
+```
+make help
+```
+
 ##### Set your GCP Project settings
 ```
 PROJECT_ID=<Enter your Anthos bare metal GCP Project ID>
 USER_EMAIL=<Enter the email address associated with your GCP project (e.g., benhuston@google.com)>
 
 make persist-settings -e PROJECT_ID=${PROJECT_ID} -e USER_EMAIL=${USER_EMAIL}
-
 ```
 
 ##### Set default GCP Project
 ```
-make set-default-gcp-project
+make set-gcp-project
 ```
 
 ##### Enable GCP APIs
@@ -47,7 +51,7 @@ make enable-gcp-apis
 
 ##### Configure IAM permissions
 ```
-make configure-iam-permissions
+make configure-iam
 ```
 
 ##### Create VMs
@@ -62,5 +66,5 @@ make prepare-hybrid-cluster
 
 ##### Configure Google Identity Login
 ```
-make configure-google-identity-login
+make google-identity-login
 ```
