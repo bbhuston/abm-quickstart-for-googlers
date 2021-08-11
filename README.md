@@ -60,17 +60,7 @@ make create-vms
 make prepare-hybrid-cluster
 ```
 
-##### Prepare an ABM user cluster that uses MetalLB
-```
-prepare-user-cluster-with-metallb
-```
-
-##### Prepare an ABM user cluster that uses GCE LoadBalancer
-```
-TODO
-```
-
 ##### Configure Google Identity Login
 ```
-make install-google-identity-login
+make configure-google-identity-login
 ```
