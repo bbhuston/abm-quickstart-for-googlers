@@ -9,7 +9,7 @@ ZONE=us-central1-a
 MACHINE_TYPE=n1-standard-4
 VM_COUNT=10
 ABM_VERSION=1.8.2
-BRANCH=v0.1.0
+BRANCH=v0.1.1
 
 # Source important variables that need to persist and are easy to forget about
 include utils/env

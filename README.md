@@ -24,6 +24,7 @@ Now you are ready to run the following commmands from inside your new CloudTop s
 ```
 git clone https://github.com/bbhuston/abm-quickstart-for-googlers.git
 cd abm-quickstart-for-googlers
+git fetch && git checkout v0.1.1
 ```
 
 ##### Check out available commands 
@@ -67,4 +68,18 @@ make prepare-hybrid-cluster
 ##### Configure Google Identity Login
 ```
 make google-identity-login
+```
+
+# Cleaning up
+
+Once you are finished experimenting with your ABM cluster, you can gracefully tear it down by running the following the commands.
+
+##### Uninstall the ABM hybrid cluster using the bmctl tool
+```
+make uninstall-hybrid-cluster
+```
+
+##### Delete the VMS
+```
+make delete-vms
 ```
