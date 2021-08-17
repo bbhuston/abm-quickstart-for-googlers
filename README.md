@@ -35,9 +35,10 @@ make help
 ##### Set your GCP Project settings
 ```
 PROJECT_ID=<Enter your Anthos bare metal GCP Project ID>
+PROJECT_NUMBER=<Enter your Anthos bare metal GCP Project Number>
 USER_EMAIL=<Enter the email address associated with your GCP project (e.g., benhuston@google.com)>
 
-make persist-settings -e PROJECT_ID=${PROJECT_ID} -e USER_EMAIL=${USER_EMAIL}
+make persist-settings -e PROJECT_ID=${PROJECT_ID} -e PROJECT_NUMBER=${PROJECT_NUMBER} -e USER_EMAIL=${USER_EMAIL}
 ```
 
 ##### Set default GCP Project
@@ -68,6 +69,16 @@ make prepare-hybrid-cluster
 ##### Configure Google Identity Login
 ```
 make google-identity-login
+```
+
+##### Configure Cloud Build Hybrid
+```
+make cloud-build-hybrid
+```
+
+Run a test build to confirm that Cloud Build Hybrid is working as expected
+```
+make test-cloud-build
 ```
 
 # Cleaning up
