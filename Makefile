@@ -112,9 +112,12 @@ cloud-build-hybrid:  ##       Enable Cloud Build Hybrid
 	@gcloud iam service-accounts create cloud-build-hybrid-workload --description="cloud-build-hybrid-workload impersonation SA" --display-name="cloud-build-hybrid-workload"
 	@gcloud projects add-iam-policy-binding ${PROJECT_ID} --member="serviceAccount:cloud-build-hybrid-workload@${PROJECT_ID}.iam.gserviceaccount.com" --role="roles/editor"
 	@gcloud iam service-accounts add-iam-policy-binding --role roles/iam.workloadIdentityUser --member "serviceAccount:${PROJECT_ID}.svc.id.goog[cloudbuild/default]" cloud-build-hybrid-workload@${PROJECT_ID}.iam.gserviceaccount.com
-	@kubectl -n cloudbuild annotate serviceaccount default iam.gke.io/gcp-service-account=cloud-build-hybrid-workload@${PROJECT_ID}.iam.gserviceaccount.com
 	@gcloud projects add-iam-policy-binding ${PROJECT_ID} --member="serviceAccount:cloud-build-hybrid-workload@${PROJECT_ID}.iam.gserviceaccount.com" --role="roles/cloudkms.cryptoKeyDecrypter"
-	@kubectl apply -f anthos-features/cloud-build-hybrid.yaml
+	@gcloud compute ssh root@abm-ws --zone ${ZONE} -- -o ProxyCommand='corp-ssh-helper %h %p' -ServerAliveInterval=30 -o ConnectTimeout=30 << EOF
+	kubectl -n cloudbuild annotate serviceaccount default iam.gke.io/gcp-service-account=cloud-build-hybrid-workload@${PROJECT_ID}.iam.gserviceaccount.com --kubeconfig=/root/bmctl-workspace/hybrid-cluster-001/hybrid-cluster-001-kubeconfig
+	wget -O cloud-build-hybrid.yaml https://raw.githubusercontent.com/bbhuston/abm-quickstart-for-googlers/${BRANCH}/anthos-features/cloud-build-hybrid.yaml
+	kubectl apply -f cloud-build-hybrid.yaml
+	EOF
 
 ##@ Removing ABM Clusters
 
@@ -153,6 +156,6 @@ test-abm-connection:  ##      Confirm the hybrid cluster is active
 	EOF
 
 test-cloud-build:  ##         Run a Cloud Build Hybrid job
-	@sed -i 's/PROJECT_NUMBER/${PROJECT_NUMBER}/' anthos-features/cloud-build-hybrid.yaml
-	@sed -i 's/CLUSTER_NAME/${BUILD_CLUSTER}/' anthos-features/cloud-build-hybrid.yaml
-	@gcloud alpha builds submit --config=anthos-features/cloud-build-hybrid.yaml --no-source
+	@sed -i 's/PROJECT_NUMBER/${PROJECT_NUMBER}/' anthos-features/cloudbuild/cloudbuild-example-001.yaml
+	@sed -i 's/CLUSTER_NAME/${BUILD_CLUSTER}/' anthos-features/cloudbuild/cloudbuild-example-001.yaml
+	@gcloud alpha builds submit --config=anthos-features/cloudbuild/cloudbuild-example-001.yaml --no-source
