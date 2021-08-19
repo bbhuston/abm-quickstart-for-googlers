@@ -156,6 +156,9 @@ test-abm-connection:  ##      Confirm the hybrid cluster is active
 	EOF
 
 test-cloud-build:  ##         Run a Cloud Build Hybrid job
-	@sed -i 's/PROJECT_NUMBER/${PROJECT_NUMBER}/' anthos-features/cloudbuild/cloudbuild-example-001.yaml
-	@sed -i 's/CLUSTER_NAME/${BUILD_CLUSTER}/' anthos-features/cloudbuild/cloudbuild-example-001.yaml
-	@gcloud alpha builds submit --config=anthos-features/cloudbuild/cloudbuild-example-001.yaml --no-source
+	@gcloud compute ssh root@abm-ws --zone ${ZONE} -- -o ProxyCommand='corp-ssh-helper %h %p' -ServerAliveInterval=30 -o ConnectTimeout=30 << EOF
+	wget -O cloudbuild-example-001.yaml https://raw.githubusercontent.com/bbhuston/abm-quickstart-for-googlers/${BRANCH}/anthos-features/cloudbuild/cloudbuild-example-001.yaml
+	@sed -i 's/PROJECT_NUMBER/${PROJECT_NUMBER}/' cloudbuild-example-001.yaml
+	@sed -i 's/CLUSTER_NAME/${BUILD_CLUSTER}/' cloudbuild-example-001.yaml
+	@gcloud alpha builds submit --config=cloudbuild-example-001.yaml --no-source
+	EOF
