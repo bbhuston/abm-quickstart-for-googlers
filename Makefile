@@ -6,10 +6,12 @@
 ####################################################################
 
 ZONE=us-central1-a
+REGION=us-central1
 MACHINE_TYPE=n1-standard-4
 VM_COUNT=10
 ABM_VERSION=1.8.2
-BRANCH=feat/GH-17
+ASM_VERSION=asm-178-8
+BRANCH=feat/GH-18
 # Cluster name of build target for Cloud Build Hybrid
 BUILD_CLUSTER=hybrid-cluster-001
 
@@ -36,6 +38,7 @@ persist-settings: ##         Write environmental variables locally
 	@echo "PROJECT_ID=${PROJECT_ID}" > utils/env
 	@echo "PROJECT_NUMBER=${PROJECT_NUMBER}" >> utils/env
 	@echo "USER_EMAIL=${USER_EMAIL}" >> utils/env
+	@echo "DOMAIN=${DOMAIN}" >> utils/env
 	@echo "BUILD_CLUSTER=${BUILD_CLUSTER}" >> utils/env
 
 ##@ Configuring your GCP Project
@@ -103,7 +106,17 @@ google-identity-login:  ##    Enable Google Identity Login
 	kubectl apply -f google-identity-login.yaml --kubeconfig=/root/bmctl-workspace/hybrid-cluster-001/hybrid-cluster-001-kubeconfig
 	EOF
 
+anthos-service-mesh:   ##     Enable Anthos Service Mesh
+	# NOTE:  Version 1.7.x of Anthos Service Mesh (ASM) is currently the only version supported by Apigee Hybrid
+	@gcloud compute ssh root@abm-ws --zone ${ZONE} -- -o ProxyCommand='corp-ssh-helper %h %p' -ServerAliveInterval=30 -o ConnectTimeout=30 << EOF
+	@kubectl create namespace istio-system --kubeconfig=/root/bmctl-workspace/hybrid-cluster-001/hybrid-cluster-001-kubeconfig
+	@istioctl install --set profile=asm-multicloud --set revision=${ASM_VERSION}
+	@kubectl apply -f istiod-service.yaml --kubeconfig=/root/bmctl-workspace/hybrid-cluster-001/hybrid-cluster-001-kubeconfig
+	@kubectl label namespace istio-system istio-injection-istio.io/rev=${ASM_VERSION} --overwrite
+	EOF
+
 cloud-build-hybrid:  ##       Enable Cloud Build Hybrid
+	# TODO: Consolidate GCP APIs steps
 	@gcloud services enable cloudbuild.googleapis.com
 	@gcloud projects add-iam-policy-binding ${PROJECT_ID} --member="serviceAccount:service-${PROJECT_NUMBER}@gcp-sa-cloudbuild.iam.gserviceaccount.com" --role="roles/gkehub.admin"
 	@gcloud projects add-iam-policy-binding ${PROJECT_ID} --member="serviceAccount:service-${PROJECT_NUMBER}@gcp-sa-cloudbuild.iam.gserviceaccount.com" --role="roles/gkehub.connect"
@@ -118,6 +131,43 @@ cloud-build-hybrid:  ##       Enable Cloud Build Hybrid
 	@wget -O cloud-build-hybrid.yaml https://raw.githubusercontent.com/bbhuston/abm-quickstart-for-googlers/${BRANCH}/anthos-features/cloud-build-hybrid.yaml
 	@kubectl apply -f cloud-build-hybrid.yaml --kubeconfig=/root/bmctl-workspace/hybrid-cluster-001/hybrid-cluster-001-kubeconfig
 	EOF
+
+apigee-apis:  ##          Enable Apigee Hybrid APIs
+	#TODO: Consolidate GCP APIs steps
+	@gcloud services enable \
+		apigee.googleapis.com \
+		apigeeconnect.googleapis.com \
+		pubsub.googleapis.com \
+		cloudresourcemanager.googleapis.com \
+		compute.googleapis.com \
+		container.googleapis.com
+	# Create an Apigee Organization
+	@curl -H "Authorization: Bearer $$(gcloud auth print-access-token)" -X POST -H "content-type:application/json" "https://apigee.googleapis.com/v1/organizations?parent=projects/${PROJECT_ID}" \
+		-d '{ "name": "${PROJECT_ID}", "displayName": "${PROJECT_ID}", "description": "Apigee Hybrid Organization", "runtimeType": "HYBRID", "analyticsRegion": "${REGION}" }'
+
+apigee-environs:  ##          Create example Apigee example environments
+	# Create dev, staging, and prod Apigee environments
+	@curl -H "Authorization: Bearer $$(gcloud auth print-access-token)" -X POST -H "content-type:application/json" \
+		-d '{"name": "development", "displayName": "development", "description": "development"}'   "https://apigee.googleapis.com/v1/organizations/${PROJECT_ID}/environments"
+	@curl -H "Authorization: Bearer $$(gcloud auth print-access-token)" -X POST -H "content-type:application/json" \
+		-d '{"name": "staging", "displayName": "staging", "description": "staging"}'   "https://apigee.googleapis.com/v1/organizations/${PROJECT_ID}/environments"
+	@curl -H "Authorization: Bearer $$(gcloud auth print-access-token)" -X POST -H "content-type:application/json" \
+		-d '{"name": "production", "displayName": "production", "description": "production"}'   "https://apigee.googleapis.com/v1/organizations/${PROJECT_ID}/environments"
+	# Create an environment group called 'api-environments'
+	@curl -H "Authorization: Bearer $$(gcloud auth print-access-token)" -X POST -H "content-type:application/json" "https://apigee.googleapis.com/v1/organizations/${PROJECT_ID}/envgroups" \
+		-d '{ "name": "api-environments", "hostnames":["${DOMAIN}"] }'
+	# Register environments with the environment group
+	@curl -H "Authorization: Bearer $$(gcloud auth print-access-token)" -X POST -H "content-type:application/json" "https://apigee.googleapis.com/v1/organizations/${PROJECT_ID}/envgroups/api-environments/attachments" \
+		-d '{"environment": "development",}'
+	@curl -H "Authorization: Bearer $$(gcloud auth print-access-token)" -X POST -H "content-type:application/json" "https://apigee.googleapis.com/v1/organizations/${PROJECT_ID}/envgroups/api-environments/attachments" \
+		-d '{"environment": "staging",}'
+	@curl -H "Authorization: Bearer $$(gcloud auth print-access-token)" -X POST -H "content-type:application/json" "https://apigee.googleapis.com/v1/organizations/${PROJECT_ID}/envgroups/api-environments/attachments" \
+		-d '{"environment": "production",}'
+
+apigee-runtime:  ##      Install the Apigee Hybrid runtime
+	# TODO: Resolve version conflict between cert-manager for Apigee Hybrid and ABM
+	# @kubectl apply --validate=false -f https://github.com/jetstack/cert-manager/releases/download/v1.2.0/cert-manager.yaml
+
 
 ##@ Removing ABM Clusters
 
@@ -162,3 +212,13 @@ test-cloud-build:  ##         Run a Cloud Build Hybrid job
 	@sed -i 's/CLUSTER_NAME/${BUILD_CLUSTER}/' cloudbuild-example-001.yaml
 	@gcloud alpha builds submit --config=cloudbuild-example-001.yaml --no-source
 	EOF
+
+create-dns-zone:  ##          Create a Cloud DNS domain
+	#TODO: Consolidate GCP APIs steps
+	@gcloud services enable \
+		dns.googleapis.com \
+		domains.googleapis.com
+	@gcloud dns managed-zones create apigee-hybrid-dns-zone \
+    	--description="Apigee Hybrid DNS Zone" \
+        --dns-name=${DOMAIN} \
+        --visibility=public

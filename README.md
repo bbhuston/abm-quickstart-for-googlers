@@ -37,8 +37,9 @@ make help
 PROJECT_ID=<Enter your Anthos bare metal GCP Project ID>
 PROJECT_NUMBER=<Enter your Anthos bare metal GCP Project Number>
 USER_EMAIL=<Enter the email address associated with your GCP project (e.g., benhuston@google.com)>
+DOMAIN=<Enter a routable Cloud DNS domain (e.g., cloud-for-cool-people.ninja)>
 
-make persist-settings -e PROJECT_ID=${PROJECT_ID} -e PROJECT_NUMBER=${PROJECT_NUMBER} -e USER_EMAIL=${USER_EMAIL}
+make persist-settings -e PROJECT_ID=${PROJECT_ID} -e PROJECT_NUMBER=${PROJECT_NUMBER} -e USER_EMAIL=${USER_EMAIL} -e DOMAIN=${DOMAIN}
 ```
 
 ##### Set default GCP Project
@@ -71,6 +72,13 @@ make prepare-hybrid-cluster
 make google-identity-login
 ```
 
+##### Configure Anthos Service Mesh
+
+NOTE: This step installs Anthos Service Mesh (ASM) version 1.7.x  because this is the most recent version of ASM that is supported by Apigee Hybrid.
+```
+make anthos-service-mesh
+```
+
 ##### Configure Cloud Build Hybrid
 ```
 make cloud-build-hybrid
@@ -80,6 +88,36 @@ Run a test build to confirm that Cloud Build Hybrid is working as expected
 ```
 make test-cloud-build
 ```
+
+##### Configure Apigee Hybrid
+
+Enable the Apigee Hybrid APIs
+```
+make apigee-apis
+```
+
+Create a Cloud DNS zone and associate it with a Cloud Domain if you do not already have one.
+```
+make create-dns-zone
+```
+
+Run the following command to register your domain (e.g., cloud-for-cool-people.ninja), if you do not already have one.  This command will guide through a sequence of interactive prompts which you can use to provide your domain registrant information.
+```
+gcloud beta domains registrations register ${DOMAIN}
+```
+
+Create Apigee Hybrid 'environments' and 'groups'
+```
+make apigee-environs
+```
+
+Install Apigee Hybrid runtime
+
+
+```
+make apigee-runtime
+```
+
 
 # Cleaning up
 
