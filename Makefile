@@ -12,10 +12,10 @@ VM_COUNT=10
 ABM_VERSION=1.8.2
 ASM_VERSION=asm-178-8
 BRANCH=feat/GH-18
-# Cluster name of build target for Cloud Build Hybrid
+# Cluster name of the default build target for Cloud Build Hybrid
 BUILD_CLUSTER=hybrid-cluster-001
 
-# Source important variables that need to persist and are easy to forget about
+# Source important variables that need to be persisted and are easy to forget about
 include utils/env
 
 ##@ Overview
@@ -47,6 +47,7 @@ set-gcp-project:  ##          Set your default GCP project
 	@gcloud config set project ${PROJECT_ID}
 
 enable-gcp-apis:  ##          Enable GCP APIs
+	# Anthos APIs
 	@gcloud services enable \
         anthos.googleapis.com \
         anthosgke.googleapis.com \
@@ -56,10 +57,25 @@ enable-gcp-apis:  ##          Enable GCP APIs
         gkehub.googleapis.com \
         serviceusage.googleapis.com \
         stackdriver.googleapis.com \
-        monitoring.googleapis.com \
-        logging.googleapis.com
+        monitoring.googleapis.com
+	# Cloud DNS APIs
+	@gcloud services enable \
+		dns.googleapis.com \
+		domains.googleapis.com	
+	# Apigee Hybrid APIs
+	@gcloud services enable \
+        logging.googleapis.com \
+		apigee.googleapis.com \
+		apigeeconnect.googleapis.com \
+		pubsub.googleapis.com \
+		compute.googleapis.com
+	# Cloud Build APIs
+	@gcloud services enable \
+		cloudbuild.googleapis.com
+		
 
 configure-iam:  ##          Bind IAM permissions to a service account
+	# Anthos IAM
 	@gcloud iam service-accounts create baremetal-gcr
 	@gcloud projects add-iam-policy-binding ${PROJECT_ID} --member="serviceAccount:baremetal-gcr@${PROJECT_ID}.iam.gserviceaccount.com" --role="roles/gkehub.connect"
 	@gcloud projects add-iam-policy-binding ${PROJECT_ID} --member="serviceAccount:baremetal-gcr@${PROJECT_ID}.iam.gserviceaccount.com" --role="roles/gkehub.admin"
@@ -67,6 +83,9 @@ configure-iam:  ##          Bind IAM permissions to a service account
 	@gcloud projects add-iam-policy-binding ${PROJECT_ID} --member="serviceAccount:baremetal-gcr@${PROJECT_ID}.iam.gserviceaccount.com" --role="roles/monitoring.metricWriter"
 	@gcloud projects add-iam-policy-binding ${PROJECT_ID} --member="serviceAccount:baremetal-gcr@${PROJECT_ID}.iam.gserviceaccount.com" --role="roles/monitoring.dashboardEditor"
 	@gcloud projects add-iam-policy-binding ${PROJECT_ID} --member="serviceAccount:baremetal-gcr@${PROJECT_ID}.iam.gserviceaccount.com" --role="roles/stackdriver.resourceMetadata.writer"
+	# Cloud Build Hybrid IAM
+	@gcloud projects add-iam-policy-binding ${PROJECT_ID} --member="serviceAccount:service-${PROJECT_NUMBER}@gcp-sa-cloudbuild.iam.gserviceaccount.com" --role="roles/gkehub.admin"
+	@gcloud projects add-iam-policy-binding ${PROJECT_ID} --member="serviceAccount:service-${PROJECT_NUMBER}@gcp-sa-cloudbuild.iam.gserviceaccount.com" --role="roles/gkehub.connect"
 
 ##@ Preparing ABM Clusters
 
@@ -101,9 +120,9 @@ prepare-hybrid-cluster:  ##   Copy a hybrid cluster manifest to the workstation
 
 google-identity-login:  ##    Enable Google Identity Login
 	@gcloud compute ssh root@abm-ws --zone ${ZONE} -- -o ProxyCommand='corp-ssh-helper %h %p' -ServerAliveInterval=30 -o ConnectTimeout=30 << EOF
-	wget -O google-identity-login.yaml https://raw.githubusercontent.com/bbhuston/abm-quickstart-for-googlers/${BRANCH}/anthos-features/google-identity-login.yaml
-	sed -i 's/example-user@google.com/${USER_EMAIL}/' google-identity-login.yaml
-	kubectl apply -f google-identity-login.yaml --kubeconfig=/root/bmctl-workspace/hybrid-cluster-001/hybrid-cluster-001-kubeconfig
+	wget -O google-identity-login-rbac.yaml https://raw.githubusercontent.com/bbhuston/abm-quickstart-for-googlers/${BRANCH}/anthos-features/google-identity-login/google-identity-login-rbac.yaml
+	sed -i 's/example-user@google.com/${USER_EMAIL}/' google-identity-login-rbac.yaml
+	kubectl apply -f google-identity-login-rbac.yaml --kubeconfig=/root/bmctl-workspace/hybrid-cluster-001/hybrid-cluster-001-kubeconfig
 	EOF
 
 anthos-service-mesh:   ##     Enable Anthos Service Mesh
@@ -116,10 +135,6 @@ anthos-service-mesh:   ##     Enable Anthos Service Mesh
 	EOF
 
 cloud-build-hybrid:  ##       Enable Cloud Build Hybrid
-	# TODO: Consolidate GCP APIs steps
-	@gcloud services enable cloudbuild.googleapis.com
-	@gcloud projects add-iam-policy-binding ${PROJECT_ID} --member="serviceAccount:service-${PROJECT_NUMBER}@gcp-sa-cloudbuild.iam.gserviceaccount.com" --role="roles/gkehub.admin"
-	@gcloud projects add-iam-policy-binding ${PROJECT_ID} --member="serviceAccount:service-${PROJECT_NUMBER}@gcp-sa-cloudbuild.iam.gserviceaccount.com" --role="roles/gkehub.connect"
 	@gcloud alpha container hub build enable
 	@gcloud alpha container hub build install --membership=projects/${PROJECT_NUMBER}/locations/global/memberships/hybrid-cluster-001
 	@gcloud iam service-accounts create cloud-build-hybrid-workload --description="cloud-build-hybrid-workload impersonation SA" --display-name="cloud-build-hybrid-workload"
@@ -128,24 +143,14 @@ cloud-build-hybrid:  ##       Enable Cloud Build Hybrid
 	@gcloud projects add-iam-policy-binding ${PROJECT_ID} --member="serviceAccount:cloud-build-hybrid-workload@${PROJECT_ID}.iam.gserviceaccount.com" --role="roles/cloudkms.cryptoKeyDecrypter"
 	@gcloud compute ssh root@abm-ws --zone ${ZONE} -- -o ProxyCommand='corp-ssh-helper %h %p' -ServerAliveInterval=30 -o ConnectTimeout=30 << EOF
 	@kubectl -n cloudbuild annotate serviceaccount default iam.gke.io/gcp-service-account=cloud-build-hybrid-workload@${PROJECT_ID}.iam.gserviceaccount.com --kubeconfig=/root/bmctl-workspace/hybrid-cluster-001/hybrid-cluster-001-kubeconfig
-	@wget -O cloud-build-hybrid.yaml https://raw.githubusercontent.com/bbhuston/abm-quickstart-for-googlers/${BRANCH}/anthos-features/cloud-build-hybrid.yaml
-	@kubectl apply -f cloud-build-hybrid.yaml --kubeconfig=/root/bmctl-workspace/hybrid-cluster-001/hybrid-cluster-001-kubeconfig
+	@wget -O cloud-build-hybrid-rbac.yaml https://raw.githubusercontent.com/bbhuston/abm-quickstart-for-googlers/${BRANCH}/anthos-features/cloud-build-hybrid/cloud-build-hybrid-rbac.yaml
+	@kubectl apply -f cloud-build-hybrid-rbac.yaml --kubeconfig=/root/bmctl-workspace/hybrid-cluster-001/hybrid-cluster-001-kubeconfig
 	EOF
 
-apigee-apis:  ##          Enable Apigee Hybrid APIs
-	#TODO: Consolidate GCP APIs steps
-	@gcloud services enable \
-		apigee.googleapis.com \
-		apigeeconnect.googleapis.com \
-		pubsub.googleapis.com \
-		cloudresourcemanager.googleapis.com \
-		compute.googleapis.com \
-		container.googleapis.com
+apigee-environs:  ##          Create example Apigee example environments
 	# Create an Apigee Organization
 	@curl -H "Authorization: Bearer $$(gcloud auth print-access-token)" -X POST -H "content-type:application/json" "https://apigee.googleapis.com/v1/organizations?parent=projects/${PROJECT_ID}" \
-		-d '{ "name": "${PROJECT_ID}", "displayName": "${PROJECT_ID}", "description": "Apigee Hybrid Organization", "runtimeType": "HYBRID", "analyticsRegion": "${REGION}" }'
-
-apigee-environs:  ##          Create example Apigee example environments
+    	-d '{ "name": "${PROJECT_ID}", "displayName": "${PROJECT_ID}", "description": "Apigee Hybrid Organization", "runtimeType": "HYBRID", "analyticsRegion": "${REGION}" }'
 	# Create dev, staging, and prod Apigee environments
 	@curl -H "Authorization: Bearer $$(gcloud auth print-access-token)" -X POST -H "content-type:application/json" \
 		-d '{"name": "development", "displayName": "development", "description": "development"}'   "https://apigee.googleapis.com/v1/organizations/${PROJECT_ID}/environments"
@@ -167,7 +172,6 @@ apigee-environs:  ##          Create example Apigee example environments
 apigee-runtime:  ##      Install the Apigee Hybrid runtime
 	# TODO: Resolve version conflict between cert-manager for Apigee Hybrid and ABM
 	# @kubectl apply --validate=false -f https://github.com/jetstack/cert-manager/releases/download/v1.2.0/cert-manager.yaml
-
 
 ##@ Removing ABM Clusters
 
@@ -207,17 +211,13 @@ test-abm-connection:  ##      Confirm the hybrid cluster is active
 
 test-cloud-build:  ##         Run a Cloud Build Hybrid job
 	@gcloud compute ssh root@abm-ws --zone ${ZONE} -- -o ProxyCommand='corp-ssh-helper %h %p' -ServerAliveInterval=30 -o ConnectTimeout=30 << EOF
-	wget -O cloudbuild-example-001.yaml https://raw.githubusercontent.com/bbhuston/abm-quickstart-for-googlers/${BRANCH}/anthos-features/cloudbuild/cloudbuild-example-001.yaml
-	@sed -i 's/PROJECT_NUMBER/${PROJECT_NUMBER}/' cloudbuild-example-001.yaml
-	@sed -i 's/CLUSTER_NAME/${BUILD_CLUSTER}/' cloudbuild-example-001.yaml
-	@gcloud alpha builds submit --config=cloudbuild-example-001.yaml --no-source
+	wget -O cloud-build-hybrid-example-001.yaml https://raw.githubusercontent.com/bbhuston/abm-quickstart-for-googlers/${BRANCH}/anthos-features/cloud-build-hybrid/cloud-build-hybrid-example-001.yaml
+	@sed -i 's/PROJECT_NUMBER/${PROJECT_NUMBER}/' cloud-build-hybrid-example-001.yaml
+	@sed -i 's/CLUSTER_NAME/${BUILD_CLUSTER}/' cloud-build-hybrid-example-001.yaml
+	@gcloud alpha builds submit --config=cloud-build-hybrid-example-001.yaml --no-source
 	EOF
 
 create-dns-zone:  ##          Create a Cloud DNS domain
-	#TODO: Consolidate GCP APIs steps
-	@gcloud services enable \
-		dns.googleapis.com \
-		domains.googleapis.com
 	@gcloud dns managed-zones create apigee-hybrid-dns-zone \
     	--description="Apigee Hybrid DNS Zone" \
         --dns-name=${DOMAIN} \
