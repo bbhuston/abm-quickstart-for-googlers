@@ -1,4 +1,5 @@
 # Modified from: https://cloud.google.com/anthos/clusters/docs/bare-metal/1.6/try/gce-vms
+# Huge thanks to Sam Stoelinga (stoelinga@) for authoring this script
 # NOTES: All shell commands use EXTRA_SSH_ARGS, which will allow shell provisioning to properly function in a google.com GCP environment
 
 # Configure your GCP project
@@ -29,7 +30,7 @@ do
               --boot-disk-type pd-ssd \
               --can-ip-forward \
               --network default \
-              --tags http-server,https-server \
+              --tags http-server,https-server,abm-demo \
               --min-cpu-platform "Intel Haswell" \
               --scopes cloud-platform \
               --machine-type $MACHINE_TYPE
