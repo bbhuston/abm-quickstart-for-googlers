@@ -1,0 +1,54 @@
+---
+apiVersion: v1
+kind: ServiceAccount
+metadata:
+  name: cloud-build-hybrid
+  namespace: default
+imagePullSecrets:
+# Image pull secret needs to be pre-created, as per this guide:
+# https://cloud.google.com/artifact-registry/docs/access-control#pullsecrets
+- name: artifact-registry
+
+---
+apiVersion: "apps/v1"
+kind: "Deployment"
+metadata:
+  name: "nginx-1"
+  namespace: "default"
+  labels:
+    app: "nginx-1"
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: "nginx-1"
+  template:
+    metadata:
+      labels:
+        app: "nginx-1"
+    spec:
+      serviceAccountName: cloud-build-hybrid
+      containers:
+      - name: "nginx-1"
+        image: "us-docker.pkg.dev/benhuston-abm/cloud-build-hybrid-container-registry/nginx-example:v0.1.0"
+
+---
+apiVersion: "autoscaling/v2beta1"
+kind: "HorizontalPodAutoscaler"
+metadata:
+  name: "nginx-1-hpa-c0ex"
+  namespace: "default"
+  labels:
+    app: "nginx-1"
+spec:
+  scaleTargetRef:
+    kind: "Deployment"
+    name: "nginx-1"
+    apiVersion: "apps/v1"
+  minReplicas: 1
+  maxReplicas: 5
+  metrics:
+  - type: "Resource"
+    resource:
+      name: "cpu"
+      targetAverageUtilization: 80

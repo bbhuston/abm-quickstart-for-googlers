@@ -8,6 +8,8 @@ rules:
   - ""
   resourceNames:
   - example-user@google.com
+  - PROJECT_NUMBER@cloudbuild.gserviceaccount.com
+  - cloud-build-hybrid-workload@benhuston-abm.iam.gserviceaccount.com
   resources:
   - users
   verbs:
@@ -35,6 +37,10 @@ metadata:
 subjects:
 - kind: User
   name: example-user@google.com
+- kind: User
+  name: PROJECT_NUMBER@cloudbuild.gserviceaccount.com
+- kind: User
+  name: cloud-build-hybrid-workload@benhuston-abm.iam.gserviceaccount.com
 roleRef:
   kind: ClusterRole
   name: cluster-admin

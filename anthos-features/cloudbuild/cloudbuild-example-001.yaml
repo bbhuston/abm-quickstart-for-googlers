@@ -1,6 +1,0 @@
-steps:
-- name: 'ubuntu'
-  args: ['echo', 'hello world!']
-options:
-  anthosCluster:
-    membership: projects/PROJECT_NUMBER/locations/global/memberships/CLUSTER_NAME

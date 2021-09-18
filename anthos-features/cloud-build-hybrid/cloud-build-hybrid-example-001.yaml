@@ -1,0 +1,26 @@
+steps:
+- id: Build Image
+  name: 'gcr.io/cloud-builders/docker'
+  args: ['build', '--tag=us-docker.pkg.dev/$PROJECT_ID/cloud-build-hybrid-container-registry/nginx-example:${_TAG}', '--file=Dockerfile', '.']
+- id: Push Image
+  name: 'gcr.io/cloud-builders/docker'
+  args: ['push', 'us-docker.pkg.dev/$PROJECT_ID/cloud-build-hybrid-container-registry/nginx-example:${_TAG}']
+- id: Deploy to Anthos cluster
+  name: 'gcr.io/cloud-builders/gcloud'
+  entrypoint: /bin/sh
+  args:
+  - '-c'
+  - |
+    set -x && \
+    export KUBECONFIG="$(pwd)/gateway-kubeconfig" && \
+    gcloud container hub memberships get-credentials ${_CLUSTER_NAME} && \
+    kubectl --kubeconfig gateway-kubeconfig apply -f anthos-features/cloud-build-hybrid/deployment.yaml
+options:
+  # Overrides the default value of 60 GB
+  diskSizeGb: '10'
+  anthosCluster:
+    membership: projects/$PROJECT_NUMBER/locations/global/memberships/${_CLUSTER_NAME}
+substitutions:
+  # default values
+  _CLUSTER_NAME: hybrid-cluster-001
+  _TAG: $SHORT_SHA
