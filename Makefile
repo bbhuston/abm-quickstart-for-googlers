@@ -219,7 +219,7 @@ test-abm-connection:  ##      Confirm the hybrid cluster is active
 	EOF
 
 test-cloud-build:  ##         Run a Cloud Build Hybrid job
-	@sed -i 's/PROJECT_ID/${PROJECT_ID}/' anthos-features/cloud-build-hybrid/cloud-build-hybrid-example-001.yaml
+	@sed -i 's/PROJECT_ID/${PROJECT_ID}/' anthos-features/cloud-build-hybrid/deployment.yaml
 	@gcloud alpha builds submit --config=anthos-features/cloud-build-hybrid/cloud-build-hybrid-example-001.yaml --no-source --substitutions=_CLUSTER_NAME=${BUILD_CLUSTER}
 
 create-dns-zone:  ##          Create a Cloud DNS domain
