@@ -9,7 +9,7 @@ ZONE=us-central1-a
 REGION=us-central1
 MACHINE_TYPE=n1-standard-4
 VM_COUNT=10
-ABM_VERSION=1.8.2
+ABM_VERSION=1.8.3
 ASM_VERSION=asm-178-8
 BRANCH=feat/GH-18
 # Cluster name of the default build target for Cloud Build Hybrid
