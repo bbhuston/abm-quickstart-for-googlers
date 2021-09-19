@@ -137,6 +137,13 @@ anthos-service-mesh:   ##     Enable Anthos Service Mesh
 cloud-build-hybrid:  ##       Enable Cloud Build Hybrid
 	@gcloud alpha container hub build enable
 	@gcloud alpha container hub build install --membership=projects/${PROJECT_NUMBER}/locations/global/memberships/hybrid-cluster-001
+	@echo
+	@echo '-----------------------------------------------------------------------------------------------------'
+	@echo
+	@echo 	Waiting for Cloud Build Hybrid installation to finish...
+	@echo
+	@echo '-----------------------------------------------------------------------------------------------------'
+	@sleep 180s
 	@gcloud iam service-accounts create cloud-build-hybrid-workload --description="cloud-build-hybrid-workload impersonation SA" --display-name="cloud-build-hybrid-workload"
 	@gcloud projects add-iam-policy-binding ${PROJECT_ID} --member="serviceAccount:cloud-build-hybrid-workload@${PROJECT_ID}.iam.gserviceaccount.com" --role="roles/editor"
 	@gcloud iam service-accounts add-iam-policy-binding --role roles/iam.workloadIdentityUser --member "serviceAccount:${PROJECT_ID}.svc.id.goog[cloudbuild/default]" cloud-build-hybrid-workload@${PROJECT_ID}.iam.gserviceaccount.com
