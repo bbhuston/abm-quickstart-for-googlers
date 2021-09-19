@@ -220,9 +220,7 @@ test-abm-connection:  ##      Confirm the hybrid cluster is active
 test-cloud-build:  ##         Run a Cloud Build Hybrid job
 	@gcloud compute ssh root@abm-ws --zone ${ZONE} -- -o ProxyCommand='corp-ssh-helper %h %p' -ServerAliveInterval=30 -o ConnectTimeout=30 << EOF
 	wget -O cloud-build-hybrid-example-001.yaml https://raw.githubusercontent.com/bbhuston/abm-quickstart-for-googlers/${BRANCH}/anthos-features/cloud-build-hybrid/cloud-build-hybrid-example-001.yaml
-	@sed -i 's/PROJECT_NUMBER/${PROJECT_NUMBER}/' cloud-build-hybrid-example-001.yaml
-	@sed -i 's/CLUSTER_NAME/${BUILD_CLUSTER}/' cloud-build-hybrid-example-001.yaml
-	@gcloud alpha builds submit --config=cloud-build-hybrid-example-001.yaml --no-source
+	@gcloud alpha builds submit --config=cloud-build-hybrid-example-001.yaml --no-source --substitutions=_CLUSTER_NAME="${BUILD_CLUSTER}"
 	EOF
 
 create-dns-zone:  ##          Create a Cloud DNS domain
