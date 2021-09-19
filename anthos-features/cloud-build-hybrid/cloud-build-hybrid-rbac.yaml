@@ -4,6 +4,8 @@ metadata:
   name: cloudbuild-default-role
   namespace: cloudbuild
 rules:
+  # NOTE:  Cloud Build Hybrid does not require cluster-admin permissions.
+  # This example provides more IAM privileges than necessary.
 - apiGroups:
   - ""
   resources:

@@ -135,6 +135,7 @@ anthos-service-mesh:   ##     Enable Anthos Service Mesh
 	EOF
 
 cloud-build-hybrid:  ##       Enable Cloud Build Hybrid
+	# TODO: Add registry creation and kubernetes registry setup steps
 	@gcloud alpha container hub build enable
 	@gcloud alpha container hub build install --membership=projects/${PROJECT_NUMBER}/locations/global/memberships/hybrid-cluster-001
 	@echo
@@ -204,7 +205,7 @@ delete-vms:  ##          Delete all GCE instances in the current zone
 	done
 
 delete-keys: ##          [TODO] Delete GCP service account keys
-	# TODO: add gcloud commands to remove stale keys
+	# TODO: Add gcloud commands to remove stale keys
 
 ##@ Workstation Utils
 
@@ -218,10 +219,8 @@ test-abm-connection:  ##      Confirm the hybrid cluster is active
 	EOF
 
 test-cloud-build:  ##         Run a Cloud Build Hybrid job
-	@gcloud compute ssh root@abm-ws --zone ${ZONE} -- -o ProxyCommand='corp-ssh-helper %h %p' -ServerAliveInterval=30 -o ConnectTimeout=30 << EOF
-	wget -O cloud-build-hybrid-example-001.yaml https://raw.githubusercontent.com/bbhuston/abm-quickstart-for-googlers/${BRANCH}/anthos-features/cloud-build-hybrid/cloud-build-hybrid-example-001.yaml
-	@gcloud alpha builds submit --config=cloud-build-hybrid-example-001.yaml --no-source --substitutions=_CLUSTER_NAME=${BUILD_CLUSTER}
-	EOF
+	@sed -i 's/PROJECT_ID/${PROJECT_ID}/' anthos-features/cloud-build-hybrid/cloud-build-hybrid-example-001.yaml
+	@gcloud alpha builds submit --config=anthos-features/cloud-build-hybrid/cloud-build-hybrid-example-001.yaml --no-source --substitutions=_CLUSTER_NAME=${BUILD_CLUSTER}
 
 create-dns-zone:  ##          Create a Cloud DNS domain
 	@gcloud dns managed-zones create apigee-hybrid-dns-zone \

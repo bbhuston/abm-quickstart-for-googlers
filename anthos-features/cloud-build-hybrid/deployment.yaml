@@ -1,9 +1,16 @@
+apiVersion: v1
+kind: Namespace
+metadata:
+  name: cloudbuild-examples
+imagePullSecrets:
+- name: artifact-registry
+
 ---
 apiVersion: v1
 kind: ServiceAccount
 metadata:
   name: cloud-build-hybrid
-  namespace: default
+  namespace: cloudbuild-examples
 imagePullSecrets:
 # Image pull secret needs to be pre-created, as per this guide:
 # https://cloud.google.com/artifact-registry/docs/access-control#pullsecrets
@@ -14,7 +21,7 @@ apiVersion: "apps/v1"
 kind: "Deployment"
 metadata:
   name: "nginx-1"
-  namespace: "default"
+  namespace: "cloudbuild-examples"
   labels:
     app: "nginx-1"
 spec:
@@ -30,14 +37,14 @@ spec:
       serviceAccountName: cloud-build-hybrid
       containers:
       - name: "nginx-1"
-        image: "us-docker.pkg.dev/benhuston-abm/cloud-build-hybrid-container-registry/nginx-example:v0.1.0"
+        image: "us-docker.pkg.dev/PROJECT_ID/cloud-build-hybrid-container-registry/nginx-example:v0.1.0"
 
 ---
 apiVersion: "autoscaling/v2beta1"
 kind: "HorizontalPodAutoscaler"
 metadata:
   name: "nginx-1-hpa-c0ex"
-  namespace: "default"
+  namespace: "cloudbuild-examples"
   labels:
     app: "nginx-1"
 spec:
