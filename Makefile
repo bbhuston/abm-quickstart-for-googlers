@@ -16,7 +16,7 @@ BRANCH=feat/GH-19
 BUILD_CLUSTER=hybrid-cluster-001
 
 # Source important variables that need to be persisted and are easy to forget about
-include utils/env
+-include utils/env
 
 ##@ Overview
 
