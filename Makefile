@@ -178,10 +178,10 @@ cloud-build-hybrid:  ##       Enable Cloud Build Hybrid
 	@kubectl -n default create secret docker-registry artifact-registry --docker-server=https://us-docker.pkg.dev --docker-email=cloud-build-hybrid-workload@benhuston-abm.iam.gserviceaccount.com --docker-username=_json_key --docker-password="$(cat artifact-registry.json)"
 	EOF
 
-apigee-hybrid: apigee-environs apigee-runtime   ##          Enable Apigee Hybrid
-	# Create environs and install runtime
+apigee-hybrid: apigee-environments apigee-runtime   ##          Enable Apigee Hybrid
+	# Create environments and install runtime
 
-apigee-environs:
+apigee-environments:
 	# Create an Apigee Organization
 	@curl -H "Authorization: Bearer $$(gcloud auth print-access-token)" -X POST -H "content-type:application/json" "https://apigee.googleapis.com/v1/organizations?parent=projects/${PROJECT_ID}" \
     	-d '{ "name": "${PROJECT_ID}", "displayName": "${PROJECT_ID}", "description": "Apigee Hybrid Organization", "runtimeType": "HYBRID", "analyticsRegion": "${REGION}" }'
