@@ -26,3 +26,24 @@ subjects:
 - kind: ServiceAccount
   name: default
   namespace: cloudbuild
+
+---
+# Example namespace
+apiVersion: v1
+kind: Namespace
+metadata:
+  name: cloudbuild-examples
+imagePullSecrets:
+- name: artifact-registry
+
+---
+# Image pull secret for Artifact Registry
+apiVersion: v1
+kind: ServiceAccount
+metadata:
+  name: cloud-build-hybrid
+  namespace: cloudbuild-examples
+imagePullSecrets:
+# Image pull secret is created as per this guide:
+# https://cloud.google.com/artifact-registry/docs/access-control#pullsecrets
+- name: artifact-registry

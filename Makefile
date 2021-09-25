@@ -34,14 +34,14 @@ include utils/env
 help: ##          Display help prompt
 	@awk 'BEGIN {FS = ":.*##"; printf "\n########################################################################\n#               AMAZING! YOU ARE SUPER ANTHOS HACKERMAN!               #\n########################################################################\n\nUsage:\n\n  make \033[36m<command>\033[0m            For example, `make help` \n"} /^[a-zA-Z_0-9-]+:.*?##/ { printf "  \033[36m%-15s\033[0m %s\n", $$1, $$2 } /^##@/ { printf "\n\033[1m%s\033[0m\n", substr($$0, 5) } ' $(MAKEFILE_LIST)
 
+##@ Configuring your GCP Project
+
 persist-settings: ##         Write environmental variables locally
 	@echo "PROJECT_ID=${PROJECT_ID}" > utils/env
 	@echo "PROJECT_NUMBER=${PROJECT_NUMBER}" >> utils/env
 	@echo "USER_EMAIL=${USER_EMAIL}" >> utils/env
 	@echo "DOMAIN=${DOMAIN}" >> utils/env
 	@echo "BUILD_CLUSTER=${BUILD_CLUSTER}" >> utils/env
-
-##@ Configuring your GCP Project
 
 set-gcp-project:  ##          Set your default GCP project
 	@gcloud config set project ${PROJECT_ID}
@@ -72,7 +72,9 @@ enable-gcp-apis:  ##          Enable GCP APIs
 	# Cloud Build APIs
 	@gcloud services enable \
 		cloudbuild.googleapis.com
-		
+	# Artifact Registry APIs
+	@gcloud services enable \
+		artifactregistry.googleapis.com
 
 configure-iam:  ##          Bind IAM permissions to a service account
 	# Anthos IAM
@@ -86,6 +88,17 @@ configure-iam:  ##          Bind IAM permissions to a service account
 	# Cloud Build Hybrid IAM
 	@gcloud projects add-iam-policy-binding ${PROJECT_ID} --member="serviceAccount:service-${PROJECT_NUMBER}@gcp-sa-cloudbuild.iam.gserviceaccount.com" --role="roles/gkehub.admin"
 	@gcloud projects add-iam-policy-binding ${PROJECT_ID} --member="serviceAccount:service-${PROJECT_NUMBER}@gcp-sa-cloudbuild.iam.gserviceaccount.com" --role="roles/gkehub.connect"
+
+create-dns-zone:  ##          Create a Cloud DNS domain
+	@gcloud dns managed-zones create apigee-hybrid-dns-zone \
+    	--description="Apigee Hybrid DNS Zone" \
+        --dns-name=${DOMAIN} \
+        --visibility=public
+
+create-artifact-registry:  ## Create Artifact Registry
+	@gcloud artifacts repositories create cloud-build-hybrid-container-registry \
+		--repository-format=DOCKER --location=us --description="Example Artifact Registry"
+	@gcloud artifacts repositories describe cloud-build-hybrid-container-registry --location=us
 
 ##@ Preparing ABM Clusters
 
@@ -122,17 +135,18 @@ google-identity-login:  ##    Enable Google Identity Login
 	@gcloud compute ssh root@abm-ws --zone ${ZONE} -- -o ProxyCommand='corp-ssh-helper %h %p' -ServerAliveInterval=30 -o ConnectTimeout=30 << EOF
 	wget -O google-identity-login-rbac.yaml https://raw.githubusercontent.com/bbhuston/abm-quickstart-for-googlers/${BRANCH}/anthos-features/google-identity-login/google-identity-login-rbac.yaml
 	sed -i 's/example-user@google.com/${USER_EMAIL}/' google-identity-login-rbac.yaml
+	sed -i 's/PROJECT_NUMBER/${PROJECT_NUMBER}/' google-identity-login-rbac.yaml
 	kubectl apply -f google-identity-login-rbac.yaml --kubeconfig=/root/bmctl-workspace/hybrid-cluster-001/hybrid-cluster-001-kubeconfig
 	EOF
 
-anthos-service-mesh:   ##     Enable Anthos Service Mesh
-	# NOTE:  Version 1.7.x of Anthos Service Mesh (ASM) is currently the only version supported by Apigee Hybrid
-	@gcloud compute ssh root@abm-ws --zone ${ZONE} -- -o ProxyCommand='corp-ssh-helper %h %p' -ServerAliveInterval=30 -o ConnectTimeout=30 << EOF
-	@kubectl create namespace istio-system --kubeconfig=/root/bmctl-workspace/hybrid-cluster-001/hybrid-cluster-001-kubeconfig
-	@istioctl install --set profile=asm-multicloud --set revision=${ASM_VERSION}
-	@kubectl apply -f istiod-service.yaml --kubeconfig=/root/bmctl-workspace/hybrid-cluster-001/hybrid-cluster-001-kubeconfig
-	@kubectl label namespace istio-system istio-injection-istio.io/rev=${ASM_VERSION} --overwrite
-	EOF
+#anthos-service-mesh:   ##      Enable Anthos Service Mesh
+#	# NOTE:  Version 1.7.x of Anthos Service Mesh (ASM) is currently the only version supported by Apigee Hybrid
+#	@gcloud compute ssh root@abm-ws --zone ${ZONE} -- -o ProxyCommand='corp-ssh-helper %h %p' -ServerAliveInterval=30 -o ConnectTimeout=30 << EOF
+#	@kubectl create namespace istio-system --kubeconfig=/root/bmctl-workspace/hybrid-cluster-001/hybrid-cluster-001-kubeconfig
+#	@istioctl install --set profile=asm-multicloud --set revision=${ASM_VERSION}
+#	@kubectl apply -f istiod-service.yaml --kubeconfig=/root/bmctl-workspace/hybrid-cluster-001/hybrid-cluster-001-kubeconfig
+#	@kubectl label namespace istio-system istio-injection-istio.io/rev=${ASM_VERSION} --overwrite
+#	EOF
 
 cloud-build-hybrid:  ##       Enable Cloud Build Hybrid
 	# TODO: Add registry creation and kubernetes registry setup steps
@@ -149,14 +163,25 @@ cloud-build-hybrid:  ##       Enable Cloud Build Hybrid
 	@gcloud iam service-accounts create cloud-build-hybrid-workload --description="cloud-build-hybrid-workload impersonation SA" --display-name="cloud-build-hybrid-workload"
 	@gcloud projects add-iam-policy-binding ${PROJECT_ID} --member="serviceAccount:cloud-build-hybrid-workload@${PROJECT_ID}.iam.gserviceaccount.com" --role="roles/editor"
 	@gcloud iam service-accounts add-iam-policy-binding --role roles/iam.workloadIdentityUser --member "serviceAccount:${PROJECT_ID}.svc.id.goog[cloudbuild/default]" cloud-build-hybrid-workload@${PROJECT_ID}.iam.gserviceaccount.com
+	@gcloud iam service-accounts add-iam-policy-binding --role roles/iam.workloadIdentityUser --member "serviceAccount:${PROJECT_ID}.svc.id.goog[cloudbuild-examples/cloud-build-hybrid]" cloud-build-hybrid-workload@${PROJECT_ID}.iam.gserviceaccount.com
 	@gcloud projects add-iam-policy-binding ${PROJECT_ID} --member="serviceAccount:cloud-build-hybrid-workload@${PROJECT_ID}.iam.gserviceaccount.com" --role="roles/cloudkms.cryptoKeyDecrypter"
 	@gcloud compute ssh root@abm-ws --zone ${ZONE} -- -o ProxyCommand='corp-ssh-helper %h %p' -ServerAliveInterval=30 -o ConnectTimeout=30 << EOF
 	@kubectl -n cloudbuild annotate serviceaccount default iam.gke.io/gcp-service-account=cloud-build-hybrid-workload@${PROJECT_ID}.iam.gserviceaccount.com --kubeconfig=/root/bmctl-workspace/hybrid-cluster-001/hybrid-cluster-001-kubeconfig
 	@wget -O cloud-build-hybrid-rbac.yaml https://raw.githubusercontent.com/bbhuston/abm-quickstart-for-googlers/${BRANCH}/anthos-features/cloud-build-hybrid/cloud-build-hybrid-rbac.yaml
 	@kubectl apply -f cloud-build-hybrid-rbac.yaml --kubeconfig=/root/bmctl-workspace/hybrid-cluster-001/hybrid-cluster-001-kubeconfig
+	@echo '-----------------------------------------------------------------------------------------------------'
+	@echo
+	@echo 	Creating image pull secret...
+	@echo
+	@echo '-----------------------------------------------------------------------------------------------------'
+	@gcloud iam service-accounts keys create artifact-registry.json --iam-account=baremetal-gcr@${PROJECT_ID}.iam.gserviceaccount.com
+	@kubectl -n default create secret docker-registry artifact-registry --docker-server=https://us-docker.pkg.dev --docker-email=cloud-build-hybrid-workload@benhuston-abm.iam.gserviceaccount.com --docker-username=_json_key --docker-password="$(cat artifact-registry.json)"
 	EOF
 
-apigee-environs:  ##          Create example Apigee example environments
+apigee-hybrid: apigee-environs apigee-runtime   ##          Enable Apigee Hybrid
+	# Create environs and install runtime
+
+apigee-environs:
 	# Create an Apigee Organization
 	@curl -H "Authorization: Bearer $$(gcloud auth print-access-token)" -X POST -H "content-type:application/json" "https://apigee.googleapis.com/v1/organizations?parent=projects/${PROJECT_ID}" \
     	-d '{ "name": "${PROJECT_ID}", "displayName": "${PROJECT_ID}", "description": "Apigee Hybrid Organization", "runtimeType": "HYBRID", "analyticsRegion": "${REGION}" }'
@@ -178,7 +203,8 @@ apigee-environs:  ##          Create example Apigee example environments
 	@curl -H "Authorization: Bearer $$(gcloud auth print-access-token)" -X POST -H "content-type:application/json" "https://apigee.googleapis.com/v1/organizations/${PROJECT_ID}/envgroups/api-environments/attachments" \
 		-d '{"environment": "production",}'
 
-apigee-runtime:  ##      Install the Apigee Hybrid runtime
+apigee-runtime:
+	# Install the Apigee Hybrid runtime
 	# TODO: Resolve version conflict between cert-manager for Apigee Hybrid and ABM
 	# @kubectl apply --validate=false -f https://github.com/jetstack/cert-manager/releases/download/v1.2.0/cert-manager.yaml
 
@@ -204,8 +230,8 @@ delete-vms:  ##          Delete all GCE instances in the current zone
 	    gcloud compute instances delete $$vm --zone=${ZONE} --quiet
 	done
 
-delete-keys: ##          [TODO] Delete GCP service account keys
-	# TODO: Add gcloud commands to remove stale keys
+#delete-keys: ##          Delete GCP service account keys
+#	# TODO: Add gcloud commands to remove stale keys
 
 ##@ Workstation Utils
 
@@ -221,9 +247,3 @@ test-abm-connection:  ##      Confirm the hybrid cluster is active
 test-cloud-build:  ##         Run a Cloud Build Hybrid job
 	@sed -i 's/PROJECT_ID/${PROJECT_ID}/' anthos-features/cloud-build-hybrid/deployment.yaml
 	@gcloud alpha builds submit --config=anthos-features/cloud-build-hybrid/cloud-build-hybrid-example-001.yaml --no-source --substitutions=_CLUSTER_NAME=${BUILD_CLUSTER}
-
-create-dns-zone:  ##          Create a Cloud DNS domain
-	@gcloud dns managed-zones create apigee-hybrid-dns-zone \
-    	--description="Apigee Hybrid DNS Zone" \
-        --dns-name=${DOMAIN} \
-        --visibility=public

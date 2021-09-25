@@ -80,6 +80,13 @@ make anthos-service-mesh
 ```
 
 ##### Configure Cloud Build Hybrid
+
+Create a container registry that can be used for pushing and pulling images.
+```
+create-artifact-registry 
+```
+
+Install the Cloud Build Hybrid controller
 ```
 make cloud-build-hybrid
 ```
@@ -91,33 +98,20 @@ make test-cloud-build
 
 ##### Configure Apigee Hybrid
 
-Enable the Apigee Hybrid APIs
-```
-make apigee-apis
-```
-
 Create a Cloud DNS zone and associate it with a Cloud Domain if you do not already have one.
 ```
 make create-dns-zone
 ```
 
-Run the following command to register your domain (e.g., cloud-for-cool-people.ninja), if you do not already have one.  This command will guide through a sequence of interactive prompts which you can use to provide your domain registrant information.
+Run the following command to register the Apigee domain (e.g., cloud-for-cool-people.ninja) that you defined at the beginning of this README.  This command will guide through a sequence of interactive prompts that will request your domain registrant information.
 ```
 gcloud beta domains registrations register ${DOMAIN}
 ```
 
-Create Apigee Hybrid 'environments' and 'groups'
+Create Apigee 'environments' and 'groups' and then install the Apigee Hybrid runtime.
 ```
-make apigee-environs
+make apigee-hybrid
 ```
-
-Install Apigee Hybrid runtime
-
-
-```
-make apigee-runtime
-```
-
 
 # Cleaning up
 
