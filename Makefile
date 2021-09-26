@@ -73,7 +73,8 @@ enable-gcp-apis:  ##          Enable GCP APIs
         serviceusage.googleapis.com \
         stackdriver.googleapis.com \
         monitoring.googleapis.com \
-        opsconfigmonitoring.googleapis.com
+        opsconfigmonitoring.googleapis.com \
+        anthosaudit.googleapis.com
 	# Cloud DNS APIs
 	@gcloud services enable \
 		dns.googleapis.com \
