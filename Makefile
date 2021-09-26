@@ -12,7 +12,6 @@ MACHINE_TYPE=n1-standard-4
 VM_COUNT=10
 ABM_VERSION=1.8.4
 ASM_VERSION=asm-178-8
-BRANCH=feat/GH-19
 # Cluster name of the default build target for Cloud Build Hybrid
 BUILD_CLUSTER=hybrid-cluster-001
 
