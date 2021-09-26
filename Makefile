@@ -116,6 +116,7 @@ prepare-hybrid-cluster:  ##   Copy a hybrid cluster manifest to the workstation
 	@echo 	Creating an ABM Hybrid Cluster now...
 	@echo
 	@echo '-----------------------------------------------------------------------------------------------------'
+	@sleep 5s
 	@gsutil cp abm-clusters/hybrid-cluster-001.yaml gs://benhuston-abm-config-bucket/hybrid-cluster-001.yaml
 	@gcloud compute ssh root@abm-ws --zone ${ZONE} -- -o ProxyCommand='corp-ssh-helper %h %p' -ServerAliveInterval=30 -o ConnectTimeout=30 << EOF
 	mkdir -p bmctl-workspace/hybrid-cluster-001
@@ -132,6 +133,7 @@ google-identity-login:  ##    Enable Google Identity Login
 	@echo 	Enabling Google Identity Login...
 	@echo
 	@echo '-----------------------------------------------------------------------------------------------------'
+	@sleep 5s
 	@gcloud compute ssh root@abm-ws --zone ${ZONE} -- -o ProxyCommand='corp-ssh-helper %h %p' -ServerAliveInterval=30 -o ConnectTimeout=30 << EOF
 	wget -O google-identity-login-rbac.yaml https://raw.githubusercontent.com/bbhuston/abm-quickstart-for-googlers/${BRANCH}/anthos-features/google-identity-login/google-identity-login-rbac.yaml
 	sed -i 's/example-user@google.com/${USER_EMAIL}/' google-identity-login-rbac.yaml
