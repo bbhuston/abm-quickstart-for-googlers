@@ -123,6 +123,7 @@ prepare-hybrid-cluster:  ##   Copy a hybrid cluster manifest to the workstation
 	gsutil cp gs://benhuston-abm-config-bucket/hybrid-cluster-001.yaml bmctl-workspace/hybrid-cluster-001/hybrid-cluster-001.yaml
 	sed -i 's/ABM_VERSION/${ABM_VERSION}/' bmctl-workspace/hybrid-cluster-001/hybrid-cluster-001.yaml
 	sed -i 's/PROJECT_ID/${PROJECT_ID}/' bmctl-workspace/hybrid-cluster-001/hybrid-cluster-001.yaml
+	bmctl create cluster -c hybrid-cluster-001
 	EOF
 
 ##@ Installing Anthos Features
@@ -156,10 +157,10 @@ cloud-build-hybrid:  ##       Enable Cloud Build Hybrid
 	@echo
 	@echo '-----------------------------------------------------------------------------------------------------'
 	@echo
-	@echo 	Waiting for Cloud Build Hybrid installation to finish...
+	@echo 	Enabling Cloud Build Hybrid...
 	@echo
 	@echo '-----------------------------------------------------------------------------------------------------'
-	@sleep 180s
+	@sleep 160s
 	@gcloud alpha container hub build describe
 	@gcloud iam service-accounts create cloud-build-hybrid-workload --description="cloud-build-hybrid-workload impersonation SA" --display-name="cloud-build-hybrid-workload"
 	@gcloud projects add-iam-policy-binding ${PROJECT_ID} --member="serviceAccount:cloud-build-hybrid-workload@${PROJECT_ID}.iam.gserviceaccount.com" --role="roles/editor"
