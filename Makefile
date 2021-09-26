@@ -111,6 +111,11 @@ create-vms:  ##          Create and bootstrap GCE instances
 	@/bin/bash utils/abm-vm-bootstrap.sh ${PROJECT_ID} ${ZONE} ${MACHINE_TYPE} ${VM_COUNT} ${ABM_VERSION}
 
 prepare-hybrid-cluster:  ##   Copy a hybrid cluster manifest to the workstation
+	@echo '-----------------------------------------------------------------------------------------------------'
+	@echo
+	@echo 	Creating an ABM Hybrid Cluster now...
+	@echo
+	@echo '-----------------------------------------------------------------------------------------------------'
 	@gsutil cp abm-clusters/hybrid-cluster-001.yaml gs://benhuston-abm-config-bucket/hybrid-cluster-001.yaml
 	@gcloud compute ssh root@abm-ws --zone ${ZONE} -- -o ProxyCommand='corp-ssh-helper %h %p' -ServerAliveInterval=30 -o ConnectTimeout=30 << EOF
 	mkdir -p bmctl-workspace/hybrid-cluster-001
@@ -118,12 +123,6 @@ prepare-hybrid-cluster:  ##   Copy a hybrid cluster manifest to the workstation
 	sed -i 's/ABM_VERSION/${ABM_VERSION}/' bmctl-workspace/hybrid-cluster-001/hybrid-cluster-001.yaml
 	sed -i 's/PROJECT_ID/${PROJECT_ID}/' bmctl-workspace/hybrid-cluster-001/hybrid-cluster-001.yaml
 	EOF
-	@echo '-----------------------------------------------------------------------------------------------------'
-	@echo
-	@echo 	Connecting to your ABM Workstation now...
-	@echo
-	@echo '-----------------------------------------------------------------------------------------------------'
-	@gcloud compute ssh root@abm-ws --zone ${ZONE} -- -o ProxyCommand='corp-ssh-helper %h %p' -ServerAliveInterval=30 -o ConnectTimeout=30
 
 ##@ Installing Anthos Features
 
