@@ -57,6 +57,11 @@ make enable-gcp-apis
 make configure-iam
 ```
 
+##### Create a configuration storage bucket
+```
+make create-config-bucket
+```
+
 ##### Create VMs
 ```
 make create-vms

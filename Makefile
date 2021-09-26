@@ -100,6 +100,9 @@ create-artifact-registry:  ## Create Artifact Registry
 		--repository-format=DOCKER --location=us --description="Example Artifact Registry"
 	@gcloud artifacts repositories describe cloud-build-hybrid-container-registry --location=us
 
+create-config-bucket:  ##     Create Cloud Storage config file bucket
+	@gsutil mb -b on -l us-central1 gs://${PROJECT_ID}-abm-config-bucket/
+
 ##@ Preparing ABM Clusters
 
 create-vms:  ##          Create and bootstrap GCE instances
