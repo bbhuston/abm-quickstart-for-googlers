@@ -175,7 +175,7 @@ cloud-build-hybrid:  ##       Enable Cloud Build Hybrid
 	@echo
 	@echo '-----------------------------------------------------------------------------------------------------'
 	@gcloud iam service-accounts keys create artifact-registry.json --iam-account=baremetal-gcr@${PROJECT_ID}.iam.gserviceaccount.com
-	@kubectl -n default create secret docker-registry artifact-registry --docker-server=https://us-docker.pkg.dev --docker-email=cloud-build-hybrid-workload@${PROJECT_ID}.iam.gserviceaccount.com --docker-username=_json_key --docker-password="$(cat artifact-registry.json)"
+	@kubectl -n default create secret docker-registry artifact-registry --docker-server=https://us-docker.pkg.dev --docker-email=cloud-build-hybrid-workload@${PROJECT_ID}.iam.gserviceaccount.com --docker-username=_json_key --docker-password="$$(cat artifact-registry.json)"
 	EOF
 
 apigee-hybrid: apigee-environments apigee-runtime   ##          Enable Apigee Hybrid
