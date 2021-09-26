@@ -174,8 +174,8 @@ cloud-build-hybrid:  ##       Enable Cloud Build Hybrid
 	@echo 	Creating image pull secret...
 	@echo
 	@echo '-----------------------------------------------------------------------------------------------------'
-	@gcloud iam service-accounts keys create artifact-registry.json --iam-account=baremetal-gcr@${PROJECT_ID}.iam.gserviceaccount.com
-	@echo '$$(cat artifact-registry.json)'
+	@#gcloud iam service-accounts keys create artifact-registry.json --iam-account=baremetal-gcr@${PROJECT_ID}.iam.gserviceaccount.com
+	@echo '$(cat artifact-registry.json)'
 	@kubectl -n default create secret docker-registry artifact-registry --docker-server=https://us-docker.pkg.dev --docker-email=cloud-build-hybrid-workload@${PROJECT_ID}.iam.gserviceaccount.com --docker-username=_json_key --docker-password='$$(cat artifact-registry.json)'
 	EOF
 
