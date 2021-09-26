@@ -180,7 +180,7 @@ prepare-user-cluster:  ##     Copy a user cluster manifest to the workstation
 	gsutil cp gs://benhuston-abm-config-bucket/user-cluster-001.yaml bmctl-workspace/user-cluster-001/user-cluster-001.yaml
 	sed -i 's/ABM_VERSION/${ABM_VERSION}/' bmctl-workspace/user-cluster-001/user-cluster-001.yaml
 	sed -i 's/PROJECT_ID/${PROJECT_ID}/' bmctl-workspace/user-cluster-001/user-cluster-001.yaml
-	bmctl create cluster -c user-cluster-001
+	bmctl create cluster -c user-cluster-001 --kubeconfig=/root/bmctl-workspace/hybrid-cluster-001/hybrid-cluster-001-kubeconfig
 	EOF
 
 ##@ Enabling Anthos Features
