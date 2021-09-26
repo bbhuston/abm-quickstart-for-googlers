@@ -101,7 +101,7 @@ create-artifact-registry:  ## Create Artifact Registry
 	@gcloud artifacts repositories describe cloud-build-hybrid-container-registry --location=us
 
 create-config-bucket:  ##     Create Cloud Storage config file bucket
-	@gsutil mb -b on -l us-central1 gs://${PROJECT_ID}-abm-config-bucket/
+	@gsutil mb -b on -l us-central1 gs://${PROJECT_ID}-config-bucket/
 
 ##@ Preparing ABM Clusters
 
