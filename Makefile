@@ -320,11 +320,23 @@ connect-to-workstation:  ##   Connect the ABM workstation from Cloudtop
 	@gcloud compute ssh root@abm-ws --zone ${ZONE} ${CORP_SETTINGS}
 
 test-abm-connection:  ##      Confirm the hybrid cluster is active
+	@echo '-----------------------------------------------------------------------------------------------------'
+	@echo
+	@echo 	Verifying that your ABM cluster is reachable...
+	@echo
+	@echo '-----------------------------------------------------------------------------------------------------'
+	@sleep 3s
 	@gcloud compute ssh root@abm-ws --zone ${ZONE} ${CORP_SETTINGS} << EOF
 	kubectl cluster-info --kubeconfig=/root/bmctl-workspace/hybrid-cluster-001/hybrid-cluster-001-kubeconfig
 	kubectl get nodes --kubeconfig=/root/bmctl-workspace/hybrid-cluster-001/hybrid-cluster-001-kubeconfig
 	EOF
 
 test-cloud-build:  ##         Run a Cloud Build Hybrid job
+	@echo '-----------------------------------------------------------------------------------------------------'
+	@echo
+	@echo 	Running a quick Cloud Build Hybrid test...
+	@echo
+	@echo '-----------------------------------------------------------------------------------------------------'
+	@sleep 3s
 	@sed -i 's/PROJECT_ID/${PROJECT_ID}/' anthos-features/cloud-build-hybrid/deployment.yaml
 	@gcloud alpha builds submit --config=anthos-features/cloud-build-hybrid/cloud-build-hybrid-example-001.yaml --no-source --substitutions=_CLUSTER_NAME=${BUILD_CLUSTER}
