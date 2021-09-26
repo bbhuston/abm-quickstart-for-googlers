@@ -118,7 +118,7 @@ prepare-hybrid-cluster:  ##   Copy a hybrid cluster manifest to the workstation
 	@echo '-----------------------------------------------------------------------------------------------------'
 	@sleep 5s
 	@gsutil cp abm-clusters/hybrid-cluster-001.yaml gs://benhuston-abm-config-bucket/hybrid-cluster-001.yaml
-	@gcloud compute ssh root@abm-ws --zone ${ZONE} -- -o ProxyCommand='corp-ssh-helper %h %p' -ServerAliveInterval=30 -o ConnectTimeout=30 << EOF
+	@gcloud compute ssh root@abm-ws --zone ${ZONE} --quiet -- -o ProxyCommand='corp-ssh-helper %h %p' -ServerAliveInterval=30 -o ConnectTimeout=30 << EOF
 	mkdir -p bmctl-workspace/hybrid-cluster-001
 	gsutil cp gs://benhuston-abm-config-bucket/hybrid-cluster-001.yaml bmctl-workspace/hybrid-cluster-001/hybrid-cluster-001.yaml
 	sed -i 's/ABM_VERSION/${ABM_VERSION}/' bmctl-workspace/hybrid-cluster-001/hybrid-cluster-001.yaml
