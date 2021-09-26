@@ -260,7 +260,7 @@ apigee-runtime:
 	@echo '-----------------------------------------------------------------------------------------------------'
 	@sleep 3s
 	# TODO: Resolve version conflict between cert-manager for Apigee Hybrid and ABM
-##@ Removing ABM Clusters
+##@ Deleting ABM Clusters
 
 reset-hybrid-cluster:  ##     Safely remove all hybrid cluster components
 	@echo '-----------------------------------------------------------------------------------------------------'
