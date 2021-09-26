@@ -117,17 +117,9 @@ prepare-hybrid-cluster:  ##   Copy a hybrid cluster manifest to the workstation
 	sed -i 's/ABM_VERSION/${ABM_VERSION}/' bmctl-workspace/hybrid-cluster-001/hybrid-cluster-001.yaml
 	sed -i 's/PROJECT_ID/${PROJECT_ID}/' bmctl-workspace/hybrid-cluster-001/hybrid-cluster-001.yaml
 	EOF
-	@echo
 	@echo '-----------------------------------------------------------------------------------------------------'
 	@echo
-	@echo
-	@echo 'You have now connected to the ABM workstation.  Run "bmctl create cluster -c hybrid-cluster-001" to create a hybrid cluster.'
-	@echo
-	@echo  'After you have finished creating the ABM hybrid cluster run the following commmands to connect to it.'
-	@echo
-	@echo "export KUBECONFIG=/root/bmctl-workspace/hybrid-cluster-001/hybrid-cluster-001-kubeconfig"
-	@echo "kubectl get nodes"
-	@echo
+	@echo 	Connecting to the Anthos Bare Metal Workstation now...
 	@echo
 	@echo '-----------------------------------------------------------------------------------------------------'
 	@gcloud compute ssh root@abm-ws --zone ${ZONE} -- -o ProxyCommand='corp-ssh-helper %h %p' -ServerAliveInterval=30 -o ConnectTimeout=30
