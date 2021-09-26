@@ -12,7 +12,7 @@ MACHINE_TYPE=n1-standard-4
 VM_COUNT=10
 ABM_VERSION=1.8.4
 ASM_VERSION=asm-178-8
-# Cluster name of the default build target for Cloud Build Hybrid
+# Name of default build target for Cloud Build Hybrid
 BUILD_CLUSTER=hybrid-cluster-001
 
 # Source important variables that need to be persisted and are easy to forget about
@@ -165,6 +165,23 @@ prepare-hybrid-cluster:  ##   Copy a hybrid cluster manifest to the workstation
 	sed -i 's/ABM_VERSION/${ABM_VERSION}/' bmctl-workspace/hybrid-cluster-001/hybrid-cluster-001.yaml
 	sed -i 's/PROJECT_ID/${PROJECT_ID}/' bmctl-workspace/hybrid-cluster-001/hybrid-cluster-001.yaml
 	bmctl create cluster -c hybrid-cluster-001
+	EOF
+
+prepare-user-cluster:  ##     Copy a user cluster manifest to the workstation
+	@echo '-----------------------------------------------------------------------------------------------------'
+	@echo
+	@echo 	Creating an ABM User Cluster now...
+	@echo
+	@echo '-----------------------------------------------------------------------------------------------------'
+	@sleep 3s
+	@gsutil cp abm-clusters/user-cluster-001.yaml gs://benhuston-abm-config-bucket/user-cluster-001.yaml
+	@gcloud compute ssh root@abm-ws --zone ${ZONE} ${CORP_SETTINGS} << EOF
+	mkdir -p bmctl-workspace/user-cluster-001
+	gsutil cp gs://benhuston-abm-config-bucket/user-cluster-001.yaml bmctl-workspace/user-cluster-001/user-cluster-001.yaml
+	sed -i 's/ABM_VERSION/${ABM_VERSION}/' bmctl-workspace/user-cluster-001/user-cluster-001.yaml
+	sed -i 's/PROJECT_ID/${PROJECT_ID}/' bmctl-workspace/user-cluster-001/user-cluster-001.yaml
+	# The User Cluster is created as a Kubernetes Custom Resource on the Hybrid Cluster
+	kubectl apply -f bmctl-workspace/user-cluster-001/user-cluster-001.yaml --kubeconfig=/root/bmctl-workspace/hybrid-cluster-001/hybrid-cluster-001-kubeconfig
 	EOF
 
 ##@ Enabling Anthos Features
