@@ -103,17 +103,18 @@ make test-cloud-build
 
 ##### Configure Apigee Hybrid
 
-Create a Cloud DNS zone and associate it with a Cloud Domain if you do not already have one.
+First, create a Cloud DNS zone and associate it with a Cloud Domain if you do not already have this prepared.
 ```
 make create-dns-zone
 ```
 
-Run the following command to register the Apigee domain (e.g., cloud-for-cool-people.ninja) that you defined at the beginning of this README.  This command will guide through a sequence of interactive prompts that will request your domain registrant information.
+Run the following command to register your desired Cloud Domain (e.g., cloud-for-cool-people.ninja) so that you can use it with Apigee.  This command will guide through a sequence of interactive prompts that will request your domain registrant information.
 ```
+# NOTE: You set this DOMAIN value at the beginning of this README
+
 gcloud beta domains registrations register ${DOMAIN}
 ```
-
-Create Apigee 'environments' and 'groups' and then install the Apigee Hybrid runtime.
+Once you have a valid domain, you can now create Apigee 'environments' and 'groups' and then install the Apigee Hybrid runtime.
 ```
 make apigee-hybrid
 ```

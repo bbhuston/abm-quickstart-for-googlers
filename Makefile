@@ -164,7 +164,7 @@ prepare-hybrid-cluster:  ##   Copy a hybrid cluster manifest to the workstation
 	bmctl create cluster -c hybrid-cluster-001
 	EOF
 
-##@ Installing Anthos Features
+##@ Enabling Anthos Features
 
 google-identity-login:  ##    Enable Google Identity Login
 	@echo '-----------------------------------------------------------------------------------------------------'
@@ -274,7 +274,7 @@ reset-hybrid-cluster:  ##     Safely remove all hybrid cluster components
 	EOF
 
 # TODO: Only delete instances that have the 'abm-demo' tag on them
-delete-vms:  ##          Delete all GCE instances in the current zone
+delete-vms: delete-keys ##          Delete all GCE instances in the current zone
 	@echo '-----------------------------------------------------------------------------------------------------'
 	@echo
 	@echo 	Deleting all VMs...
@@ -294,8 +294,16 @@ delete-vms:  ##          Delete all GCE instances in the current zone
 	    gcloud compute instances delete $$vm --zone=${ZONE} --quiet
 	done
 
-#delete-keys: ##          Delete GCP service account keys
-#	# TODO: Add gcloud commands to remove stale keys
+delete-keys: ##          Delete GCP service account keys used by ABM
+	@echo '-----------------------------------------------------------------------------------------------------'
+	@echo
+	@echo 	Deleting ABM service account keys...
+	@echo
+	@echo '-----------------------------------------------------------------------------------------------------'
+	@sleep 3s
+	gcloud iam service-accounts keys list --managed-by=user --iam-account=baremetal-gcr@${PROJECT_ID}.iam.gserviceaccount.com | awk '{ print $$1 }' |  tail -n +2 > temp.txt
+	while read line; do gcloud iam service-accounts keys delete $$line --iam-account=baremetal-gcr@${PROJECT_ID}.iam.gserviceaccount.com --quiet; done < temp.txt
+	rm temp.txt
 
 ##@ Workstation Utils
 
