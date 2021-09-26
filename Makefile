@@ -72,7 +72,8 @@ enable-gcp-apis:  ##          Enable GCP APIs
         gkehub.googleapis.com \
         serviceusage.googleapis.com \
         stackdriver.googleapis.com \
-        monitoring.googleapis.com
+        monitoring.googleapis.com \
+        opsconfigmonitoring.googleapis.com
 	# Cloud DNS APIs
 	@gcloud services enable \
 		dns.googleapis.com \
@@ -292,7 +293,7 @@ delete-vms: delete-keys ##          Delete all GCE instances in the current zone
 	# Delete VMs
 	for vm in "$${VMs[@]}"
 	do
-	    gcloud compute instances delete $$vm --zone=${ZONE} --quiet
+	    gcloud compute instances delete $$vm --zone=${ZONE} --tags=abm-demo --quiet
 	done
 
 delete-keys: ##          Delete GCP service account keys used by ABM
