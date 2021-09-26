@@ -79,7 +79,11 @@ make prepare-user-cluster
 
 ##### Configure Google Identity Login
 ```
+# hybrid cluster
 make google-identity-login
+
+# user cluster
+make google-identity-login -e KUBECONFIG=/root/bmctl-workspace/user-cluster-001/user-cluster-001-kubeconfig
 ```
 
 ##### Configure Anthos Service Mesh

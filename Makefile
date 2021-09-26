@@ -14,6 +14,8 @@ ABM_VERSION=1.8.4
 ASM_VERSION=asm-178-8
 # Name of default build target for Cloud Build Hybrid
 BUILD_CLUSTER=hybrid-cluster-001
+# Path to default ABM Kubeconfig file
+KUBECONFIG=/root/bmctl-workspace/hybrid-cluster-001/hybrid-cluster-001-kubeconfig
 
 # Source important variables that need to be persisted and are easy to forget about
 -include utils/env
@@ -180,7 +182,7 @@ prepare-user-cluster:  ##     Copy a user cluster manifest to the workstation
 	gsutil cp gs://benhuston-abm-config-bucket/user-cluster-001.yaml bmctl-workspace/user-cluster-001/user-cluster-001.yaml
 	sed -i 's/ABM_VERSION/${ABM_VERSION}/' bmctl-workspace/user-cluster-001/user-cluster-001.yaml
 	sed -i 's/PROJECT_ID/${PROJECT_ID}/' bmctl-workspace/user-cluster-001/user-cluster-001.yaml
-	bmctl create cluster -c user-cluster-001 --kubeconfig=/root/bmctl-workspace/hybrid-cluster-001/hybrid-cluster-001-kubeconfig
+	bmctl create cluster -c user-cluster-001 --kubeconfig=${KUBECONFIG}
 	EOF
 
 ##@ Enabling Anthos Features
@@ -197,15 +199,15 @@ google-identity-login:  ##    Enable Google Identity Login
 	@gsutil cp gs://benhuston-abm-config-bucket/google-identity-login-rbac.yaml google-identity-login-rbac.yaml
 	sed -i 's/example-user@google.com/${USER_EMAIL}/' google-identity-login-rbac.yaml
 	sed -i 's/PROJECT_NUMBER/${PROJECT_NUMBER}/' google-identity-login-rbac.yaml
-	kubectl apply -f google-identity-login-rbac.yaml --kubeconfig=/root/bmctl-workspace/hybrid-cluster-001/hybrid-cluster-001-kubeconfig
+	kubectl apply -f google-identity-login-rbac.yaml --kubeconfig=${KUBECONFIG}
 	EOF
 
 #anthos-service-mesh:   ##      Enable Anthos Service Mesh
 #	# NOTE:  Version 1.7.x of Anthos Service Mesh (ASM) is currently the only version supported by Apigee Hybrid
 #	@gcloud compute ssh root@abm-ws --zone ${ZONE} ${CORP_SETTINGS} << EOF
-#	@kubectl create namespace istio-system --kubeconfig=/root/bmctl-workspace/hybrid-cluster-001/hybrid-cluster-001-kubeconfig
+#	@kubectl create namespace istio-system --kubeconfig=${KUBECONFIG}
 #	@istioctl install --set profile=asm-multicloud --set revision=${ASM_VERSION}
-#	@kubectl apply -f istiod-service.yaml --kubeconfig=/root/bmctl-workspace/hybrid-cluster-001/hybrid-cluster-001-kubeconfig
+#	@kubectl apply -f istiod-service.yaml --kubeconfig=${KUBECONFIG}
 #	@kubectl label namespace istio-system istio-injection-istio.io/rev=${ASM_VERSION} --overwrite
 #	EOF
 
@@ -228,15 +230,15 @@ cloud-build-hybrid:  ##       Enable Cloud Build Hybrid
 	@gsutil cp anthos-features/cloud-build-hybrid/cloud-build-hybrid-rbac.yaml gs://benhuston-abm-config-bucket/cloud-build-hybrid-rbac.yaml
 	@gcloud compute ssh root@abm-ws --zone ${ZONE} ${CORP_SETTINGS} << EOF
 	@gsutil cp gs://benhuston-abm-config-bucket/cloud-build-hybrid-rbac.yaml cloud-build-hybrid-rbac.yaml
-	@kubectl -n cloudbuild annotate serviceaccount default iam.gke.io/gcp-service-account=cloud-build-hybrid-workload@${PROJECT_ID}.iam.gserviceaccount.com --overwrite=true --kubeconfig=/root/bmctl-workspace/hybrid-cluster-001/hybrid-cluster-001-kubeconfig
-	@kubectl apply -f cloud-build-hybrid-rbac.yaml --kubeconfig=/root/bmctl-workspace/hybrid-cluster-001/hybrid-cluster-001-kubeconfig
+	@kubectl -n cloudbuild annotate serviceaccount default iam.gke.io/gcp-service-account=cloud-build-hybrid-workload@${PROJECT_ID}.iam.gserviceaccount.com --overwrite=true --kubeconfig=${KUBECONFIG}
+	@kubectl apply -f cloud-build-hybrid-rbac.yaml --kubeconfig=${KUBECONFIG}
 	@echo '-----------------------------------------------------------------------------------------------------'
 	@echo
 	@echo 	Creating an image pull secret...
 	@echo
 	@echo '-----------------------------------------------------------------------------------------------------'
 	@gcloud iam service-accounts keys create artifact-registry.json --iam-account=baremetal-gcr@${PROJECT_ID}.iam.gserviceaccount.com
-	@kubectl -n cloudbuild-examples create secret docker-registry artifact-registry --docker-server=https://us-docker.pkg.dev --docker-email=cloud-build-hybrid-workload@${PROJECT_ID}.iam.gserviceaccount.com --docker-username=_json_key --docker-password='\$$(cat artifact-registry.json)' --kubeconfig=/root/bmctl-workspace/hybrid-cluster-001/hybrid-cluster-001-kubeconfig
+	@kubectl -n cloudbuild-examples create secret docker-registry artifact-registry --docker-server=https://us-docker.pkg.dev --docker-email=cloud-build-hybrid-workload@${PROJECT_ID}.iam.gserviceaccount.com --docker-username=_json_key --docker-password='\$$(cat artifact-registry.json)' --kubeconfig=${KUBECONFIG}
 	EOF
 
 apigee-hybrid: apigee-environments apigee-runtime   ##          Enable Apigee Hybrid
@@ -343,8 +345,8 @@ test-abm-connection:  ##      Confirm the hybrid cluster is active
 	@echo '-----------------------------------------------------------------------------------------------------'
 	@sleep 3s
 	@gcloud compute ssh root@abm-ws --zone ${ZONE} ${CORP_SETTINGS} << EOF
-	kubectl cluster-info --kubeconfig=/root/bmctl-workspace/hybrid-cluster-001/hybrid-cluster-001-kubeconfig
-	kubectl get nodes --kubeconfig=/root/bmctl-workspace/hybrid-cluster-001/hybrid-cluster-001-kubeconfig
+	kubectl cluster-info --kubeconfig=${KUBECONFIG}
+	kubectl get nodes --kubeconfig=${KUBECONFIG}
 	EOF
 
 test-cloud-build:  ##         Run a Cloud Build Hybrid job
