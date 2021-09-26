@@ -1,4 +1,10 @@
 ---
+gcrKeyPath: /root/bm-gcr.json
+sshPrivateKeyPath: /root/.ssh/id_rsa
+gkeConnectAgentServiceAccountKeyPath: /root/bm-gcr.json
+gkeConnectRegisterServiceAccountKeyPath: /root/bm-gcr.json
+cloudOperationsServiceAccountKeyPath: /root/bm-gcr.json
+---
 apiVersion: v1
 kind: Namespace
 metadata:
