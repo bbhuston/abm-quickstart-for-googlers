@@ -109,7 +109,7 @@ Once you are finished experimenting with your ABM cluster, you can gracefully te
 
 ##### Uninstall the ABM hybrid cluster using the bmctl tool
 ```
-make uninstall-hybrid-cluster
+make reset-hybrid-cluster
 ```
 
 ##### Delete the VMS
