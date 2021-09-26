@@ -119,7 +119,7 @@ prepare-hybrid-cluster:  ##   Copy a hybrid cluster manifest to the workstation
 	EOF
 	@echo '-----------------------------------------------------------------------------------------------------'
 	@echo
-	@echo 	Connecting to the Anthos Bare Metal Workstation now...
+	@echo 	Connecting to your ABM Workstation now...
 	@echo
 	@echo '-----------------------------------------------------------------------------------------------------'
 	@gcloud compute ssh root@abm-ws --zone ${ZONE} -- -o ProxyCommand='corp-ssh-helper %h %p' -ServerAliveInterval=30 -o ConnectTimeout=30
