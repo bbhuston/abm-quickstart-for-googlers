@@ -202,15 +202,6 @@ google-identity-login:  ##    Enable Google Identity Login
 	kubectl apply -f google-identity-login-rbac.yaml --kubeconfig=${KUBECONFIG}
 	EOF
 
-#anthos-service-mesh:   ##      Enable Anthos Service Mesh
-#	# NOTE:  Version 1.7.x of Anthos Service Mesh (ASM) is currently the only version supported by Apigee Hybrid
-#	@gcloud compute ssh root@abm-ws --zone ${ZONE} ${CORP_SETTINGS} << EOF
-#	@kubectl create namespace istio-system --kubeconfig=${KUBECONFIG}
-#	@istioctl install --set profile=asm-multicloud --set revision=${ASM_VERSION}
-#	@kubectl apply -f istiod-service.yaml --kubeconfig=${KUBECONFIG}
-#	@kubectl label namespace istio-system istio-injection-istio.io/rev=${ASM_VERSION} --overwrite
-#	EOF
-
 cloud-build-hybrid:  ##       Enable Cloud Build Hybrid
 	@gcloud alpha container hub build enable
 	@gcloud alpha container hub build install --membership=projects/${PROJECT_NUMBER}/locations/global/memberships/hybrid-cluster-001
@@ -240,48 +231,6 @@ cloud-build-hybrid:  ##       Enable Cloud Build Hybrid
 	@gcloud iam service-accounts keys create artifact-registry.json --iam-account=baremetal-gcr@${PROJECT_ID}.iam.gserviceaccount.com
 	@kubectl -n cloudbuild-examples create secret docker-registry artifact-registry --docker-server=https://us-docker.pkg.dev --docker-email=cloud-build-hybrid-workload@${PROJECT_ID}.iam.gserviceaccount.com --docker-username=_json_key --docker-password='\$$(cat artifact-registry.json)' --kubeconfig=${KUBECONFIG}
 	EOF
-
-apigee-hybrid: apigee-environments apigee-runtime   ##          Enable Apigee Hybrid
-	# Create environments and install runtime
-
-apigee-environments:
-	@echo '-----------------------------------------------------------------------------------------------------'
-	@echo
-	@echo 	Creating an Apigee environments...
-	@echo
-	@echo '-----------------------------------------------------------------------------------------------------'
-	@sleep 3s
-	# Create an Apigee Organization
-	@curl -H "Authorization: Bearer $$(gcloud auth print-access-token)" -X POST -H "content-type:application/json" "https://apigee.googleapis.com/v1/organizations?parent=projects/${PROJECT_ID}" \
-    	-d '{ "name": "${PROJECT_ID}", "displayName": "${PROJECT_ID}", "description": "Apigee Hybrid Organization", "runtimeType": "HYBRID", "analyticsRegion": "${REGION}" }'
-	# Create dev, staging, and prod Apigee environments
-	@curl -H "Authorization: Bearer $$(gcloud auth print-access-token)" -X POST -H "content-type:application/json" \
-		-d '{"name": "development", "displayName": "development", "description": "development"}'   "https://apigee.googleapis.com/v1/organizations/${PROJECT_ID}/environments"
-	@curl -H "Authorization: Bearer $$(gcloud auth print-access-token)" -X POST -H "content-type:application/json" \
-		-d '{"name": "staging", "displayName": "staging", "description": "staging"}'   "https://apigee.googleapis.com/v1/organizations/${PROJECT_ID}/environments"
-	@curl -H "Authorization: Bearer $$(gcloud auth print-access-token)" -X POST -H "content-type:application/json" \
-		-d '{"name": "production", "displayName": "production", "description": "production"}'   "https://apigee.googleapis.com/v1/organizations/${PROJECT_ID}/environments"
-	# Create an environment group called 'api-environments'
-	@curl -H "Authorization: Bearer $$(gcloud auth print-access-token)" -X POST -H "content-type:application/json" "https://apigee.googleapis.com/v1/organizations/${PROJECT_ID}/envgroups" \
-		-d '{ "name": "api-environments", "hostnames":["${DOMAIN}"] }'
-	# Register environments with the environment group
-	@curl -H "Authorization: Bearer $$(gcloud auth print-access-token)" -X POST -H "content-type:application/json" "https://apigee.googleapis.com/v1/organizations/${PROJECT_ID}/envgroups/api-environments/attachments" \
-		-d '{"environment": "development",}'
-	@curl -H "Authorization: Bearer $$(gcloud auth print-access-token)" -X POST -H "content-type:application/json" "https://apigee.googleapis.com/v1/organizations/${PROJECT_ID}/envgroups/api-environments/attachments" \
-		-d '{"environment": "staging",}'
-	@curl -H "Authorization: Bearer $$(gcloud auth print-access-token)" -X POST -H "content-type:application/json" "https://apigee.googleapis.com/v1/organizations/${PROJECT_ID}/envgroups/api-environments/attachments" \
-		-d '{"environment": "production",}'
-
-apigee-runtime:
-	# Install the Apigee Hybrid runtime
-	@echo '-----------------------------------------------------------------------------------------------------'
-	@echo
-	@echo 	Installing the Apigee Hybrid runtime...
-	@echo
-	@echo '-----------------------------------------------------------------------------------------------------'
-	@sleep 3s
-	# TODO: Resolve version conflict between cert-manager for Apigee Hybrid and ABM
-##@ Deleting ABM Clusters
 
 reset-hybrid-cluster:  ##     Safely remove all hybrid cluster components
 	@echo '-----------------------------------------------------------------------------------------------------'

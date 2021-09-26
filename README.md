@@ -86,13 +86,6 @@ make google-identity-login
 make google-identity-login -e KUBECONFIG=/root/bmctl-workspace/user-cluster-001/user-cluster-001-kubeconfig
 ```
 
-##### Configure Anthos Service Mesh
-
-NOTE: This step installs Anthos Service Mesh (ASM) version 1.7.x  because this is the most recent version of ASM that is supported by Apigee Hybrid.
-```
-make anthos-service-mesh
-```
-
 ##### Configure Cloud Build Hybrid
 
 Create a container registry that can be used for pushing and pulling images.
@@ -108,24 +101,6 @@ make cloud-build-hybrid
 Run a test build to confirm that Cloud Build Hybrid is working as expected
 ```
 make test-cloud-build
-```
-
-##### Configure Apigee Hybrid
-
-First, create a Cloud DNS zone and associate it with a Cloud Domain if you do not already have this prepared.
-```
-make create-dns-zone
-```
-
-Run the following command to register your desired Cloud Domain (e.g., cloud-for-cool-people.ninja) so that you can use it with Apigee.  This command will guide through a sequence of interactive prompts that will request your domain registrant information.
-```
-# NOTE: You set this DOMAIN value at the beginning of this README
-
-gcloud beta domains registrations register ${DOMAIN}
-```
-Once you have a valid domain, you can now create Apigee 'environments' and 'groups' and then install the Apigee Hybrid runtime.
-```
-make apigee-hybrid
 ```
 
 # Cleaning up
