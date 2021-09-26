@@ -149,7 +149,6 @@ google-identity-login:  ##    Enable Google Identity Login
 #	EOF
 
 cloud-build-hybrid:  ##       Enable Cloud Build Hybrid
-	# TODO: Add registry creation and kubernetes registry setup steps
 	@gcloud alpha container hub build enable
 	@gcloud alpha container hub build install --membership=projects/${PROJECT_NUMBER}/locations/global/memberships/hybrid-cluster-001
 	@echo
@@ -158,7 +157,7 @@ cloud-build-hybrid:  ##       Enable Cloud Build Hybrid
 	@echo 	Waiting for Cloud Build Hybrid installation to finish...
 	@echo
 	@echo '-----------------------------------------------------------------------------------------------------'
-	@#sleep 180s
+	@sleep 180s
 	@gcloud alpha container hub build describe
 	@gcloud iam service-accounts create cloud-build-hybrid-workload --description="cloud-build-hybrid-workload impersonation SA" --display-name="cloud-build-hybrid-workload"
 	@gcloud projects add-iam-policy-binding ${PROJECT_ID} --member="serviceAccount:cloud-build-hybrid-workload@${PROJECT_ID}.iam.gserviceaccount.com" --role="roles/editor"
@@ -174,7 +173,7 @@ cloud-build-hybrid:  ##       Enable Cloud Build Hybrid
 	@echo 	Creating image pull secret...
 	@echo
 	@echo '-----------------------------------------------------------------------------------------------------'
-	@#gcloud iam service-accounts keys create artifact-registry.json --iam-account=baremetal-gcr@${PROJECT_ID}.iam.gserviceaccount.com
+	@gcloud iam service-accounts keys create artifact-registry.json --iam-account=baremetal-gcr@${PROJECT_ID}.iam.gserviceaccount.com
 	@kubectl -n cloudbuild-examples create secret docker-registry artifact-registry --docker-server=https://us-docker.pkg.dev --docker-email=cloud-build-hybrid-workload@${PROJECT_ID}.iam.gserviceaccount.com --docker-username=_json_key --docker-password='\$$(cat artifact-registry.json)' --kubeconfig=/root/bmctl-workspace/hybrid-cluster-001/hybrid-cluster-001-kubeconfig
 	EOF
 
