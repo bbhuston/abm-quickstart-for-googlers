@@ -1,4 +1,5 @@
 .ONESHELL:
+.SILENT:
 .EXPORT_ALL_VARIABLES:
 
 ####################################################################
@@ -110,7 +111,7 @@ create-vms:  ##          Create and bootstrap GCE instances
 	@/bin/bash utils/abm-vm-bootstrap.sh ${PROJECT_ID} ${ZONE} ${MACHINE_TYPE} ${VM_COUNT} ${ABM_VERSION}
 
 prepare-hybrid-cluster:  ##   Copy a hybrid cluster manifest to the workstation
-	gsutil cp abm-clusters/hybrid-cluster-001.yaml gs://benhuston-abm-config-bucket/hybrid-cluster-001.yaml
+	@gsutil cp abm-clusters/hybrid-cluster-001.yaml gs://benhuston-abm-config-bucket/hybrid-cluster-001.yaml
 	@gcloud compute ssh root@abm-ws --zone ${ZONE} -- -o ProxyCommand='corp-ssh-helper %h %p' -ServerAliveInterval=30 -o ConnectTimeout=30 << EOF
 	mkdir -p bmctl-workspace/hybrid-cluster-001
 	gsutil cp gs://benhuston-abm-config-bucket/hybrid-cluster-001.yaml bmctl-workspace/hybrid-cluster-001/hybrid-cluster-001.yaml
