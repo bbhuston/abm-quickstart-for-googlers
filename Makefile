@@ -261,7 +261,7 @@ delete-vms: delete-keys ##          Delete all GCE instances in the current zone
 	# Delete VMs
 	for vm in "$${VMs[@]}"
 	do
-	    gcloud compute instances delete $$vm --zone=${ZONE} --tags=abm-demo --quiet
+	    gcloud compute instances delete $$vm --zone=${ZONE} --quiet
 	done
 
 delete-keys: ##          Delete GCP service account keys used by ABM
