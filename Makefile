@@ -41,6 +41,12 @@ help: ##          Display help prompt
 ##@ Configuring your GCP Project
 
 persist-settings: ##         Write environmental variables locally
+	@echo '-----------------------------------------------------------------------------------------------------'
+	@echo
+	@echo 	Writing your settings to utils/env...
+	@echo
+	@echo '-----------------------------------------------------------------------------------------------------'
+	@sleep 3s
 	@echo "PROJECT_ID=${PROJECT_ID}" > utils/env
 	@echo "PROJECT_NUMBER=${PROJECT_NUMBER}" >> utils/env
 	@echo "USER_EMAIL=${USER_EMAIL}" >> utils/env
@@ -51,6 +57,12 @@ set-gcp-project:  ##          Set your default GCP project
 	@gcloud config set project ${PROJECT_ID}
 
 enable-gcp-apis:  ##          Enable GCP APIs
+	@echo '-----------------------------------------------------------------------------------------------------'
+	@echo
+	@echo 	Activating Google Cloud APIs...
+	@echo
+	@echo '-----------------------------------------------------------------------------------------------------'
+	@sleep 3s
 	# Anthos APIs
 	@gcloud services enable \
         anthos.googleapis.com \
@@ -81,6 +93,12 @@ enable-gcp-apis:  ##          Enable GCP APIs
 		artifactregistry.googleapis.com
 
 configure-iam:  ##          Bind IAM permissions to a service account
+	@echo '-----------------------------------------------------------------------------------------------------'
+	@echo
+	@echo 	Configuring IAM permissions...
+	@echo
+	@echo '-----------------------------------------------------------------------------------------------------'
+	@sleep 3s
 	# Anthos IAM
 	@gcloud iam service-accounts create baremetal-gcr
 	@gcloud projects add-iam-policy-binding ${PROJECT_ID} --member="serviceAccount:baremetal-gcr@${PROJECT_ID}.iam.gserviceaccount.com" --role="roles/gkehub.connect"
@@ -94,12 +112,24 @@ configure-iam:  ##          Bind IAM permissions to a service account
 	@gcloud projects add-iam-policy-binding ${PROJECT_ID} --member="serviceAccount:service-${PROJECT_NUMBER}@gcp-sa-cloudbuild.iam.gserviceaccount.com" --role="roles/gkehub.connect"
 
 create-dns-zone:  ##          Create a Cloud DNS domain
+	@echo '-----------------------------------------------------------------------------------------------------'
+	@echo
+	@echo 	Creating a new Cloud DNS zone...
+	@echo
+	@echo '-----------------------------------------------------------------------------------------------------'
+	@sleep 3s
 	@gcloud dns managed-zones create apigee-hybrid-dns-zone \
     	--description="Apigee Hybrid DNS Zone" \
         --dns-name=${DOMAIN} \
         --visibility=public
 
 create-artifact-registry:  ## Create Artifact Registry
+	@echo '-----------------------------------------------------------------------------------------------------'
+	@echo
+	@echo 	Creating a new Artifact Registry...
+	@echo
+	@echo '-----------------------------------------------------------------------------------------------------'
+	@sleep 3s
 	@gcloud artifacts repositories create cloud-build-hybrid-container-registry \
 		--repository-format=DOCKER --location=us --description="Example Artifact Registry"
 	@gcloud artifacts repositories describe cloud-build-hybrid-container-registry --location=us
@@ -110,6 +140,12 @@ create-config-bucket:  ##     Create Cloud Storage config file bucket
 ##@ Preparing ABM Clusters
 
 create-vms:  ##          Create and bootstrap GCE instances
+	@echo '-----------------------------------------------------------------------------------------------------'
+	@echo
+	@echo 	Provisioning new VMs now...
+	@echo
+	@echo '-----------------------------------------------------------------------------------------------------'
+	@sleep 3s
 	# Top level environmental variables are passed into the the shell script positionally
 	@/bin/bash utils/abm-vm-bootstrap.sh ${PROJECT_ID} ${ZONE} ${MACHINE_TYPE} ${VM_COUNT} ${ABM_VERSION}
 
@@ -119,7 +155,7 @@ prepare-hybrid-cluster:  ##   Copy a hybrid cluster manifest to the workstation
 	@echo 	Creating an ABM Hybrid Cluster now...
 	@echo
 	@echo '-----------------------------------------------------------------------------------------------------'
-	@sleep 5s
+	@sleep 3s
 	@gsutil cp abm-clusters/hybrid-cluster-001.yaml gs://benhuston-abm-config-bucket/hybrid-cluster-001.yaml
 	@gcloud compute ssh root@abm-ws --zone ${ZONE} -- -o ${CORP_SETTINGS} << EOF
 	mkdir -p bmctl-workspace/hybrid-cluster-001
@@ -137,9 +173,10 @@ google-identity-login:  ##    Enable Google Identity Login
 	@echo 	Enabling Google Identity Login...
 	@echo
 	@echo '-----------------------------------------------------------------------------------------------------'
-	@sleep 5s
+	@sleep 3s
+	@gsutil cp anthos-features/google-identity-login/google-identity-login-rbac.yaml gs://benhuston-abm-config-bucket/google-identity-login-rbac.yaml
 	@gcloud compute ssh root@abm-ws --zone ${ZONE} -- -o ${CORP_SETTINGS} << EOF
-	wget -O google-identity-login-rbac.yaml https://raw.githubusercontent.com/bbhuston/abm-quickstart-for-googlers/${BRANCH}/anthos-features/google-identity-login/google-identity-login-rbac.yaml
+	@gsutil cp gs://benhuston-abm-config-bucket/google-identity-login-rbac.yaml google-identity-login-rbac.yaml
 	sed -i 's/example-user@google.com/${USER_EMAIL}/' google-identity-login-rbac.yaml
 	sed -i 's/PROJECT_NUMBER/${PROJECT_NUMBER}/' google-identity-login-rbac.yaml
 	kubectl apply -f google-identity-login-rbac.yaml --kubeconfig=/root/bmctl-workspace/hybrid-cluster-001/hybrid-cluster-001-kubeconfig
@@ -170,13 +207,14 @@ cloud-build-hybrid:  ##       Enable Cloud Build Hybrid
 	@gcloud iam service-accounts add-iam-policy-binding --role roles/iam.workloadIdentityUser --member "serviceAccount:${PROJECT_ID}.svc.id.goog[cloudbuild/default]" cloud-build-hybrid-workload@${PROJECT_ID}.iam.gserviceaccount.com
 	@gcloud iam service-accounts add-iam-policy-binding --role roles/iam.workloadIdentityUser --member "serviceAccount:${PROJECT_ID}.svc.id.goog[cloudbuild-examples/cloud-build-hybrid]" cloud-build-hybrid-workload@${PROJECT_ID}.iam.gserviceaccount.com
 	@gcloud projects add-iam-policy-binding ${PROJECT_ID} --member="serviceAccount:cloud-build-hybrid-workload@${PROJECT_ID}.iam.gserviceaccount.com" --role="roles/cloudkms.cryptoKeyDecrypter"
+	@gsutil cp anthos-features/cloud-build-hybrid/cloud-build-hybrid-rbac.yaml gs://benhuston-abm-config-bucket/cloud-build-hybrid-rbac.yaml
 	@gcloud compute ssh root@abm-ws --zone ${ZONE} -- -o ${CORP_SETTINGS} << EOF
+	@gsutil cp gs://benhuston-abm-config-bucket/cloud-build-hybrid-rbac.yaml cloud-build-hybrid-rbac.yaml
 	@kubectl -n cloudbuild annotate serviceaccount default iam.gke.io/gcp-service-account=cloud-build-hybrid-workload@${PROJECT_ID}.iam.gserviceaccount.com --overwrite=true --kubeconfig=/root/bmctl-workspace/hybrid-cluster-001/hybrid-cluster-001-kubeconfig
-	@wget -O cloud-build-hybrid-rbac.yaml https://raw.githubusercontent.com/bbhuston/abm-quickstart-for-googlers/${BRANCH}/anthos-features/cloud-build-hybrid/cloud-build-hybrid-rbac.yaml
 	@kubectl apply -f cloud-build-hybrid-rbac.yaml --kubeconfig=/root/bmctl-workspace/hybrid-cluster-001/hybrid-cluster-001-kubeconfig
 	@echo '-----------------------------------------------------------------------------------------------------'
 	@echo
-	@echo 	Creating image pull secret...
+	@echo 	Creating an image pull secret...
 	@echo
 	@echo '-----------------------------------------------------------------------------------------------------'
 	@gcloud iam service-accounts keys create artifact-registry.json --iam-account=baremetal-gcr@${PROJECT_ID}.iam.gserviceaccount.com
@@ -187,6 +225,12 @@ apigee-hybrid: apigee-environments apigee-runtime   ##          Enable Apigee Hy
 	# Create environments and install runtime
 
 apigee-environments:
+	@echo '-----------------------------------------------------------------------------------------------------'
+	@echo
+	@echo 	Creating an Apigee environments...
+	@echo
+	@echo '-----------------------------------------------------------------------------------------------------'
+	@sleep 3s
 	# Create an Apigee Organization
 	@curl -H "Authorization: Bearer $$(gcloud auth print-access-token)" -X POST -H "content-type:application/json" "https://apigee.googleapis.com/v1/organizations?parent=projects/${PROJECT_ID}" \
     	-d '{ "name": "${PROJECT_ID}", "displayName": "${PROJECT_ID}", "description": "Apigee Hybrid Organization", "runtimeType": "HYBRID", "analyticsRegion": "${REGION}" }'
@@ -210,18 +254,34 @@ apigee-environments:
 
 apigee-runtime:
 	# Install the Apigee Hybrid runtime
+	@echo '-----------------------------------------------------------------------------------------------------'
+	@echo
+	@echo 	Installing the Apigee Hybrid runtime...
+	@echo
+	@echo '-----------------------------------------------------------------------------------------------------'
+	@sleep 3s
 	# TODO: Resolve version conflict between cert-manager for Apigee Hybrid and ABM
-	# @kubectl apply --validate=false -f https://github.com/jetstack/cert-manager/releases/download/v1.2.0/cert-manager.yaml
-
 ##@ Removing ABM Clusters
 
-uninstall-hybrid-cluster:  ## Safely uninstall the hybrid cluster components
+reset-hybrid-cluster:  ##     Safely remove all hybrid cluster components
+	@echo '-----------------------------------------------------------------------------------------------------'
+	@echo
+	@echo 	Removing all ABM Hybrid Cluster components...
+	@echo
+	@echo '-----------------------------------------------------------------------------------------------------'
+	@sleep 3s
 	@gcloud compute ssh root@abm-ws --zone ${ZONE} -- -o ${CORP_SETTINGS} << EOF
 	bmctl reset --cluster hybrid-cluster-001
 	EOF
 
 # TODO: Only delete instances that have the 'abm-demo' tag on them
 delete-vms:  ##          Delete all GCE instances in the current zone
+	@echo '-----------------------------------------------------------------------------------------------------'
+	@echo
+	@echo 	Deleting all VMs...
+	@echo
+	@echo '-----------------------------------------------------------------------------------------------------'
+	@sleep 3s
 	@export VM_WS=abm-ws
 	# Create list of VM names
 	@export VMs=()
@@ -241,6 +301,12 @@ delete-vms:  ##          Delete all GCE instances in the current zone
 ##@ Workstation Utils
 
 connect-to-workstation:  ##   Connect the ABM workstation from Cloudtop
+	@echo '-----------------------------------------------------------------------------------------------------'
+	@echo
+	@echo 	Connecting to your ABM Workstation...
+	@echo
+	@echo '-----------------------------------------------------------------------------------------------------'
+	@sleep 3s
 	@gcloud compute ssh root@abm-ws --zone ${ZONE} -- -o ${CORP_SETTINGS}
 
 test-abm-connection:  ##      Confirm the hybrid cluster is active
