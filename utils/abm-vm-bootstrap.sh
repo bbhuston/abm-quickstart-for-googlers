@@ -9,6 +9,7 @@ export ZONE=$2
 # Set VM instance type and quantity
 MACHINE_TYPE=$3
 VM_COUNT=$4
+ABM_VERSION=$5
 
 # Create list of VM name
 declare -a VMs=()
@@ -90,7 +91,7 @@ curl -LO "https://storage.googleapis.com/kubernetes-release/release/$(curl -s ht
 chmod +x kubectl
 mv kubectl /usr/local/sbin/
 mkdir baremetal && cd baremetal
-gsutil cp gs://anthos-baremetal-release/bmctl/$5/linux-amd64/bmctl .
+gsutil cp gs://anthos-baremetal-release/bmctl/${ABM_VERSION}/linux-amd64/bmctl .
 chmod a+x bmctl
 mv bmctl /usr/local/sbin/
 
