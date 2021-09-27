@@ -24,7 +24,7 @@ Now you are ready to run the following commmands from inside your new CloudTop s
 ```
 git clone https://github.com/bbhuston/abm-quickstart-for-googlers.git
 cd abm-quickstart-for-googlers
-git fetch && git checkout v0.1.1
+git fetch && git checkout v0.1.2
 ```
 
 ##### Check out available commands 
@@ -88,12 +88,14 @@ make google-identity-login -e CLUSTER_NAME=user-cluster-001
 
 ##### Configure Cloud Build Hybrid
 
-Create a container registry that can be used for pushing and pulling images.
+IMPORTANT:  Cloud Build Hybrid is still in Private Preview, so you will first need to complete [this form](https://docs.google.com/forms/d/e/1FAIpQLSeLji5duBK2TDuWErlL-tjvbnyRVgVmmE6rLU4WuqcSax4KdA/viewform) in order to be allow-listed to access the API.
+
+To use this feature you will need to create a container registry that can be used for pushing and pulling images.
 ```
 create-artifact-registry 
 ```
 
-Install the Cloud Build Hybrid controller
+Once you have been granted access to the Private Preview API, run the following command to install the Cloud Build Hybrid controller.
 ```
 # hybrid cluster
 make cloud-build-hybrid -e CLUSTER_NAME=hybrid-cluster-001
@@ -102,7 +104,7 @@ make cloud-build-hybrid -e CLUSTER_NAME=hybrid-cluster-001
 make cloud-build-hybrid -e CLUSTER_NAME=user-cluster-001
 ```
 
-Run a test build to confirm that Cloud Build Hybrid is working as expected
+Finally, run a test build to confirm that Cloud Build Hybrid is working as expected
 ```
 make test-cloud-build -e CLUSTER_NAME=hybrid-cluster-001
 ```

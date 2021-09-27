@@ -154,7 +154,7 @@ create-vms:  ##          Create and bootstrap GCE instances
 prepare-hybrid-cluster:  ##   Copy a hybrid cluster manifest to the workstation
 	@echo '-----------------------------------------------------------------------------------------------------'
 	@echo
-	@echo 	Creating an ABM Hybrid Cluster now...
+	@echo 	Creating an ABM hybrid cluster now...
 	@echo
 	@echo '-----------------------------------------------------------------------------------------------------'
 	@sleep 3s
@@ -170,7 +170,7 @@ prepare-hybrid-cluster:  ##   Copy a hybrid cluster manifest to the workstation
 prepare-user-cluster:  ##     Copy a user cluster manifest to the workstation
 	@echo '-----------------------------------------------------------------------------------------------------'
 	@echo
-	@echo 	Creating an ABM User Cluster now...
+	@echo 	Creating an ABM user cluster now...
 	@echo
 	@echo '-----------------------------------------------------------------------------------------------------'
 	@sleep 3s
@@ -278,7 +278,7 @@ delete-keys: ##          Delete GCP service account keys used by ABM
 connect-to-workstation:  ##   Connect the ABM workstation from Cloudtop
 	@echo '-----------------------------------------------------------------------------------------------------'
 	@echo
-	@echo 	Connecting to your ABM Workstation...
+	@echo 	Connecting to your ABM workstation...
 	@echo
 	@echo '-----------------------------------------------------------------------------------------------------'
 	@sleep 3s
