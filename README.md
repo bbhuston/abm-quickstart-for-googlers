@@ -18,13 +18,13 @@ ssh ${CLOUDTOP_ALIAS}.c.googlers.com
 gcert
 ```
 
-Now you are ready to run the following commmands from inside your new CloudTop session.
+Now you are ready to run the following commands from inside your new CloudTop session.
 
 ##### Download quickstart repo
 ```
 git clone https://github.com/bbhuston/abm-quickstart-for-googlers.git
 cd abm-quickstart-for-googlers
-git fetch && git checkout v0.1.1
+git fetch && git checkout v0.1.2
 ```
 
 ##### Check out available commands 
@@ -35,9 +35,11 @@ make help
 ##### Set your GCP Project settings
 ```
 PROJECT_ID=<Enter your Anthos bare metal GCP Project ID>
+PROJECT_NUMBER=<Enter your Anthos bare metal GCP Project Number>
 USER_EMAIL=<Enter the email address associated with your GCP project (e.g., benhuston@google.com)>
+DOMAIN=<Enter a routable Cloud DNS domain (e.g., cloud-for-cool-people.ninja)>
 
-make persist-settings -e PROJECT_ID=${PROJECT_ID} -e USER_EMAIL=${USER_EMAIL}
+make persist-settings -e PROJECT_ID=${PROJECT_ID} -e PROJECT_NUMBER=${PROJECT_NUMBER} -e USER_EMAIL=${USER_EMAIL} -e DOMAIN=${DOMAIN}
 ```
 
 ##### Set default GCP Project
@@ -55,6 +57,11 @@ make enable-gcp-apis
 make configure-iam
 ```
 
+##### Create a configuration storage bucket
+```
+make create-config-bucket
+```
+
 ##### Create VMs
 ```
 make create-vms
@@ -65,18 +72,54 @@ make create-vms
 make prepare-hybrid-cluster
 ```
 
+##### Prepare an ABM user cluster
+```
+make prepare-user-cluster
+```
+
 ##### Configure Google Identity Login
 ```
-make google-identity-login
+# hybrid cluster
+make google-identity-login -e CLUSTER_NAME=hybrid-cluster-001
+
+# user cluster
+make google-identity-login -e CLUSTER_NAME=user-cluster-001
+```
+
+##### Configure Cloud Build Hybrid
+
+IMPORTANT:  Cloud Build Hybrid is still in Private Preview, so you will first need to complete [this form](https://docs.google.com/forms/d/e/1FAIpQLSeLji5duBK2TDuWErlL-tjvbnyRVgVmmE6rLU4WuqcSax4KdA/viewform) in order to be allow-listed to access the API.
+
+To use this feature you will need to create a container registry that can be used for pushing and pulling images.
+```
+make create-artifact-registry 
+```
+
+Once you have been granted access to the Private Preview API, run the following command to install the Cloud Build Hybrid controller.
+```
+# hybrid cluster
+make cloud-build-hybrid -e CLUSTER_NAME=hybrid-cluster-001
+
+# user cluster
+make cloud-build-hybrid -e CLUSTER_NAME=user-cluster-001
+```
+
+Finally, run a test build to confirm that Cloud Build Hybrid is working as expected
+```
+make test-cloud-build -e CLUSTER_NAME=hybrid-cluster-001
 ```
 
 # Cleaning up
 
-Once you are finished experimenting with your ABM cluster, you can gracefully tear it down by running the following the commands.
+Once you are finished experimenting with your ABM clusters, you can gracefully tear them down by running the following commands.
 
-##### Uninstall the ABM hybrid cluster using the bmctl tool
+##### Remove all ABM cluster components
 ```
-make uninstall-hybrid-cluster
+# Reset the user cluster first because it has a dependancy on the hybrid cluster
+make reset-cluster -e CLUSTER_NAME=user-cluster-001
+
+# Finally reset the hybrid cluster
+make reset-cluster -e CLUSTER_NAME=hybrid-cluster-001
 ```
 
 ##### Delete the VMS

@@ -1,0 +1,47 @@
+apiVersion: rbac.authorization.k8s.io/v1
+kind: Role
+metadata:
+  name: cloudbuild-default-role
+  namespace: cloudbuild
+rules:
+  # NOTE:  Cloud Build Hybrid does not require cluster-admin permissions.
+  # This example provides more IAM privileges than necessary.
+- apiGroups:
+  - ""
+  resources:
+  - '*'
+  verbs:
+  - '*'
+---
+apiVersion: rbac.authorization.k8s.io/v1
+kind: RoleBinding
+metadata:
+  name: cloudbuild-default-admin
+  namespace: cloudbuild
+roleRef:
+  apiGroup: rbac.authorization.k8s.io
+  kind: Role
+  name: cloudbuild-default-role
+subjects:
+- kind: ServiceAccount
+  name: default
+  namespace: cloudbuild
+
+---
+# Example namespace
+apiVersion: v1
+kind: Namespace
+metadata:
+  name: cloudbuild-examples
+
+---
+# Image pull secret for Artifact Registry
+apiVersion: v1
+kind: ServiceAccount
+metadata:
+  name: cloud-build-hybrid
+  namespace: cloudbuild-examples
+imagePullSecrets:
+# Image pull secret is created as per this guide:
+# https://cloud.google.com/artifact-registry/docs/access-control#pullsecrets
+- name: artifact-registry

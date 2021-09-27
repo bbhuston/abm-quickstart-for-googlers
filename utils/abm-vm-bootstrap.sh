@@ -1,4 +1,5 @@
 # Modified from: https://cloud.google.com/anthos/clusters/docs/bare-metal/1.6/try/gce-vms
+# Huge thanks to Sam Stoelinga (stoelinga@) for authoring this script
 # NOTES: All shell commands use EXTRA_SSH_ARGS, which will allow shell provisioning to properly function in a google.com GCP environment
 
 # Configure your GCP project
@@ -8,6 +9,7 @@ export ZONE=$2
 # Set VM instance type and quantity
 MACHINE_TYPE=$3
 VM_COUNT=$4
+ABM_VERSION=$5
 
 # Create list of VM name
 declare -a VMs=()
@@ -29,7 +31,7 @@ do
               --boot-disk-type pd-ssd \
               --can-ip-forward \
               --network default \
-              --tags http-server,https-server \
+              --tags http-server,https-server,abm-demo \
               --min-cpu-platform "Intel Haswell" \
               --scopes cloud-platform \
               --machine-type $MACHINE_TYPE
@@ -46,7 +48,7 @@ then
 fi
 for vm in "${VMs[@]}"
 do
-    while ! gcloud compute ssh root@$vm --zone us-central1-a --command "echo SSH to $vm succeeded" "${EXTRA_SSH_ARGS[@]}"
+    while ! gcloud compute ssh root@$vm --zone ${ZONE} --command "echo SSH to $vm succeeded" "${EXTRA_SSH_ARGS[@]}"
     do
         echo "Trying to SSH into $vm failed. Sleeping for 5 seconds. zzzZZzzZZ"
         sleep  5
@@ -89,7 +91,7 @@ curl -LO "https://storage.googleapis.com/kubernetes-release/release/$(curl -s ht
 chmod +x kubectl
 mv kubectl /usr/local/sbin/
 mkdir baremetal && cd baremetal
-gsutil cp gs://anthos-baremetal-release/bmctl/$5/linux-amd64/bmctl .
+gsutil cp gs://anthos-baremetal-release/bmctl/${ABM_VERSION}/linux-amd64/bmctl .
 chmod a+x bmctl
 mv bmctl /usr/local/sbin/
 
