@@ -18,7 +18,7 @@ ssh ${CLOUDTOP_ALIAS}.c.googlers.com
 gcert
 ```
 
-Now you are ready to run the following commmands from inside your new CloudTop session.
+Now you are ready to run the following commands from inside your new CloudTop session.
 
 ##### Download quickstart repo
 ```
@@ -92,7 +92,7 @@ IMPORTANT:  Cloud Build Hybrid is still in Private Preview, so you will first ne
 
 To use this feature you will need to create a container registry that can be used for pushing and pulling images.
 ```
-create-artifact-registry 
+make create-artifact-registry 
 ```
 
 Once you have been granted access to the Private Preview API, run the following command to install the Cloud Build Hybrid controller.
@@ -111,14 +111,14 @@ make test-cloud-build -e CLUSTER_NAME=hybrid-cluster-001
 
 # Cleaning up
 
-Once you are finished experimenting with your ABM cluster, you can gracefully tear it down by running the following the commands.
+Once you are finished experimenting with your ABM clusters, you can gracefully tear them down by running the following commands.
 
-##### Uninstall the ABM hybrid cluster using the bmctl tool
+##### Remove all ABM cluster components
 ```
-# user cluster
+# Reset the user cluster first because it has a dependancy on the hybrid cluster
 make reset-cluster -e CLUSTER_NAME=user-cluster-001
 
-# hybrid cluster
+# Finally reset the hybrid cluster
 make reset-cluster -e CLUSTER_NAME=hybrid-cluster-001
 ```
 
