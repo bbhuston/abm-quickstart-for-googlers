@@ -305,3 +305,14 @@ test-cloud-build:  ##         Run a Cloud Build Hybrid job
 	@sleep 3s
 	@sed -i 's/PROJECT_ID/${PROJECT_ID}/' anthos-features/cloud-build-hybrid/deployment.yaml
 	@gcloud alpha builds submit --config=anthos-features/cloud-build-hybrid/cloud-build-hybrid-example-001.yaml --no-source --substitutions=_CLUSTER_NAME=${CLUSTER_NAME}
+
+get-diagnostic-snapshot:
+	@echo '-----------------------------------------------------------------------------------------------------'
+	@echo
+	@echo 	Creating a cluster snapshot...
+	@echo
+	@echo '-----------------------------------------------------------------------------------------------------'
+	@sleep 3s
+	@gcloud compute ssh root@abm-ws --zone ${ZONE} ${CORP_SETTINGS} << EOF
+	@bmctl check cluster --snapshot --cluster ${CLUSTER_NAME} --admin-kubeconfig --kubeconfig=/root/bmctl-workspace/hybrid-cluster-001/hybrid-cluster-001-kubeconfig
+	EOF
