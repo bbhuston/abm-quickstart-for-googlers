@@ -80,10 +80,10 @@ make prepare-user-cluster
 ##### Configure Google Identity Login
 ```
 # hybrid cluster
-make google-identity-login
+make google-identity-login -e CLUSTER_NAME=hybrid-cluster-001
 
 # user cluster
-make google-identity-login -e KUBECONFIG=/root/bmctl-workspace/user-cluster-001/user-cluster-001-kubeconfig
+make google-identity-login -e CLUSTER_NAME=user-cluster-001
 ```
 
 ##### Configure Cloud Build Hybrid
@@ -95,12 +95,16 @@ create-artifact-registry
 
 Install the Cloud Build Hybrid controller
 ```
-make cloud-build-hybrid
+# hybrid cluster
+make cloud-build-hybrid -e CLUSTER_NAME=hybrid-cluster-001
+
+# user cluster
+make cloud-build-hybrid -e CLUSTER_NAME=user-cluster-001
 ```
 
 Run a test build to confirm that Cloud Build Hybrid is working as expected
 ```
-make test-cloud-build
+make test-cloud-build -e CLUSTER_NAME=hybrid-cluster-001
 ```
 
 # Cleaning up
@@ -109,7 +113,11 @@ Once you are finished experimenting with your ABM cluster, you can gracefully te
 
 ##### Uninstall the ABM hybrid cluster using the bmctl tool
 ```
-make reset-hybrid-cluster
+# user cluster
+make reset-cluster -e CLUSTER_NAME=user-cluster-001
+
+# hybrid cluster
+make reset-cluster -e CLUSTER_NAME=hybrid-cluster-001
 ```
 
 ##### Delete the VMS

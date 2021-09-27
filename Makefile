@@ -12,10 +12,8 @@ MACHINE_TYPE=n1-standard-4
 VM_COUNT=10
 ABM_VERSION=1.8.4
 ASM_VERSION=asm-178-8
-# Name of default build target for Cloud Build Hybrid
-BUILD_CLUSTER=hybrid-cluster-001
-# Path to default ABM Kubeconfig file
-KUBECONFIG=/root/bmctl-workspace/hybrid-cluster-001/hybrid-cluster-001-kubeconfig
+# Name of default cluster to enable Anthos features on
+CLUSTER_NAME=hybrid-cluster-001
 
 # Source important variables that need to be persisted and are easy to forget about
 -include utils/env
@@ -52,7 +50,7 @@ persist-settings: ##         Write environmental variables locally
 	@echo "PROJECT_NUMBER=${PROJECT_NUMBER}" >> utils/env
 	@echo "USER_EMAIL=${USER_EMAIL}" >> utils/env
 	@echo "DOMAIN=${DOMAIN}" >> utils/env
-	@echo "BUILD_CLUSTER=${BUILD_CLUSTER}" >> utils/env
+	@echo "CLUSTER_NAME=${CLUSTER_NAME}" >> utils/env
 
 set-gcp-project:  ##          Set your default GCP project
 	@gcloud config set project ${PROJECT_ID}
@@ -160,13 +158,13 @@ prepare-hybrid-cluster:  ##   Copy a hybrid cluster manifest to the workstation
 	@echo
 	@echo '-----------------------------------------------------------------------------------------------------'
 	@sleep 3s
-	@gsutil cp abm-clusters/hybrid-cluster-001.yaml gs://benhuston-abm-config-bucket/hybrid-cluster-001.yaml
+	@gsutil cp abm-clusters/${CLUSTER_NAME}.yaml gs://benhuston-abm-config-bucket/${CLUSTER_NAME}.yaml
 	@gcloud compute ssh root@abm-ws --zone ${ZONE} ${CORP_SETTINGS} << EOF
-	mkdir -p bmctl-workspace/hybrid-cluster-001
-	gsutil cp gs://benhuston-abm-config-bucket/hybrid-cluster-001.yaml bmctl-workspace/hybrid-cluster-001/hybrid-cluster-001.yaml
-	sed -i 's/ABM_VERSION/${ABM_VERSION}/' bmctl-workspace/hybrid-cluster-001/hybrid-cluster-001.yaml
-	sed -i 's/PROJECT_ID/${PROJECT_ID}/' bmctl-workspace/hybrid-cluster-001/hybrid-cluster-001.yaml
-	bmctl create cluster -c hybrid-cluster-001
+	mkdir -p bmctl-workspace/${CLUSTER_NAME}
+	gsutil cp gs://benhuston-abm-config-bucket/${CLUSTER_NAME}.yaml bmctl-workspace/${CLUSTER_NAME}/${CLUSTER_NAME}.yaml
+	sed -i 's/ABM_VERSION/${ABM_VERSION}/' bmctl-workspace/${CLUSTER_NAME}/${CLUSTER_NAME}.yaml
+	sed -i 's/PROJECT_ID/${PROJECT_ID}/' bmctl-workspace/${CLUSTER_NAME}/${CLUSTER_NAME}.yaml
+	bmctl create cluster -c ${CLUSTER_NAME}
 	EOF
 
 prepare-user-cluster:  ##     Copy a user cluster manifest to the workstation
@@ -182,7 +180,7 @@ prepare-user-cluster:  ##     Copy a user cluster manifest to the workstation
 	gsutil cp gs://benhuston-abm-config-bucket/user-cluster-001.yaml bmctl-workspace/user-cluster-001/user-cluster-001.yaml
 	sed -i 's/ABM_VERSION/${ABM_VERSION}/' bmctl-workspace/user-cluster-001/user-cluster-001.yaml
 	sed -i 's/PROJECT_ID/${PROJECT_ID}/' bmctl-workspace/user-cluster-001/user-cluster-001.yaml
-	bmctl create cluster -c user-cluster-001 --kubeconfig=${KUBECONFIG}
+	bmctl create cluster -c user-cluster-001 --kubeconfig=/root/bmctl-workspace/${CLUSTER_NAME}/${CLUSTER_NAME}-kubeconfig
 	EOF
 
 ##@ Enabling Anthos Features
@@ -199,12 +197,12 @@ google-identity-login:  ##    Enable Google Identity Login
 	@gsutil cp gs://benhuston-abm-config-bucket/google-identity-login-rbac.yaml google-identity-login-rbac.yaml
 	sed -i 's/example-user@google.com/${USER_EMAIL}/' google-identity-login-rbac.yaml
 	sed -i 's/PROJECT_NUMBER/${PROJECT_NUMBER}/' google-identity-login-rbac.yaml
-	kubectl apply -f google-identity-login-rbac.yaml --kubeconfig=${KUBECONFIG}
+	kubectl apply -f google-identity-login-rbac.yaml --kubeconfig=/root/bmctl-workspace/${CLUSTER_NAME}/${CLUSTER_NAME}-kubeconfig
 	EOF
 
 cloud-build-hybrid:  ##       Enable Cloud Build Hybrid
 	@gcloud alpha container hub build enable
-	@gcloud alpha container hub build install --membership=projects/${PROJECT_NUMBER}/locations/global/memberships/hybrid-cluster-001
+	@gcloud alpha container hub build install --membership=projects/${PROJECT_NUMBER}/locations/global/memberships/${CLUSTER_NAME}
 	@echo
 	@echo '-----------------------------------------------------------------------------------------------------'
 	@echo
@@ -221,26 +219,26 @@ cloud-build-hybrid:  ##       Enable Cloud Build Hybrid
 	@gsutil cp anthos-features/cloud-build-hybrid/cloud-build-hybrid-rbac.yaml gs://benhuston-abm-config-bucket/cloud-build-hybrid-rbac.yaml
 	@gcloud compute ssh root@abm-ws --zone ${ZONE} ${CORP_SETTINGS} << EOF
 	@gsutil cp gs://benhuston-abm-config-bucket/cloud-build-hybrid-rbac.yaml cloud-build-hybrid-rbac.yaml
-	@kubectl -n cloudbuild annotate serviceaccount default iam.gke.io/gcp-service-account=cloud-build-hybrid-workload@${PROJECT_ID}.iam.gserviceaccount.com --overwrite=true --kubeconfig=${KUBECONFIG}
-	@kubectl apply -f cloud-build-hybrid-rbac.yaml --kubeconfig=${KUBECONFIG}
+	@kubectl -n cloudbuild annotate serviceaccount default iam.gke.io/gcp-service-account=cloud-build-hybrid-workload@${PROJECT_ID}.iam.gserviceaccount.com --overwrite=true --kubeconfig=/root/bmctl-workspace/${CLUSTER_NAME}/${CLUSTER_NAME}-kubeconfig
+	@kubectl apply -f cloud-build-hybrid-rbac.yaml --kubeconfig=/root/bmctl-workspace/${CLUSTER_NAME}/${CLUSTER_NAME}-kubeconfig
 	@echo '-----------------------------------------------------------------------------------------------------'
 	@echo
 	@echo 	Creating an image pull secret...
 	@echo
 	@echo '-----------------------------------------------------------------------------------------------------'
 	@gcloud iam service-accounts keys create artifact-registry.json --iam-account=baremetal-gcr@${PROJECT_ID}.iam.gserviceaccount.com
-	@kubectl -n cloudbuild-examples create secret docker-registry artifact-registry --docker-server=https://us-docker.pkg.dev --docker-email=cloud-build-hybrid-workload@${PROJECT_ID}.iam.gserviceaccount.com --docker-username=_json_key --docker-password='\$$(cat artifact-registry.json)' --kubeconfig=${KUBECONFIG}
+	@kubectl -n cloudbuild-examples create secret docker-registry artifact-registry --docker-server=https://us-docker.pkg.dev --docker-email=cloud-build-hybrid-workload@${PROJECT_ID}.iam.gserviceaccount.com --docker-username=_json_key --docker-password='\$$(cat artifact-registry.json)' --kubeconfig=/root/bmctl-workspace/${CLUSTER_NAME}/${CLUSTER_NAME}-kubeconfig
 	EOF
 
-reset-hybrid-cluster:  ##     Safely remove all hybrid cluster components
+reset-cluster:  ##          Safely remove all cluster components
 	@echo '-----------------------------------------------------------------------------------------------------'
 	@echo
-	@echo 	Removing all ABM Hybrid Cluster components...
+	@echo 	Removing all ABM cluster components...
 	@echo
 	@echo '-----------------------------------------------------------------------------------------------------'
 	@sleep 3s
 	@gcloud compute ssh root@abm-ws --zone ${ZONE} ${CORP_SETTINGS} << EOF
-	bmctl reset --cluster hybrid-cluster-001
+	bmctl reset --cluster ${CLUSTER_NAME}
 	EOF
 
 # TODO: Only delete instances that have the 'abm-demo' tag on them
@@ -294,8 +292,8 @@ test-abm-connection:  ##      Confirm the hybrid cluster is active
 	@echo '-----------------------------------------------------------------------------------------------------'
 	@sleep 3s
 	@gcloud compute ssh root@abm-ws --zone ${ZONE} ${CORP_SETTINGS} << EOF
-	kubectl cluster-info --kubeconfig=${KUBECONFIG}
-	kubectl get nodes --kubeconfig=${KUBECONFIG}
+	kubectl cluster-info --kubeconfig=/root/bmctl-workspace/${CLUSTER_NAME}/${CLUSTER_NAME}-kubeconfig
+	kubectl get nodes --kubeconfig=/root/bmctl-workspace/${CLUSTER_NAME}/${CLUSTER_NAME}-kubeconfig
 	EOF
 
 test-cloud-build:  ##         Run a Cloud Build Hybrid job
@@ -306,4 +304,4 @@ test-cloud-build:  ##         Run a Cloud Build Hybrid job
 	@echo '-----------------------------------------------------------------------------------------------------'
 	@sleep 3s
 	@sed -i 's/PROJECT_ID/${PROJECT_ID}/' anthos-features/cloud-build-hybrid/deployment.yaml
-	@gcloud alpha builds submit --config=anthos-features/cloud-build-hybrid/cloud-build-hybrid-example-001.yaml --no-source --substitutions=_CLUSTER_NAME=${BUILD_CLUSTER}
+	@gcloud alpha builds submit --config=anthos-features/cloud-build-hybrid/cloud-build-hybrid-example-001.yaml --no-source --substitutions=_CLUSTER_NAME=${CLUSTER_NAME}
