@@ -245,7 +245,7 @@ reset-cluster:  ##          Safely remove all cluster components
 delete-vms: delete-keys ##          Delete all GCE instances in the current zone
 	@echo '-----------------------------------------------------------------------------------------------------'
 	@echo
-	@echo 	Deleting all VMs...
+	@echo 	Deleting VMs...
 	@echo
 	@echo '-----------------------------------------------------------------------------------------------------'
 	@sleep 3s
