@@ -314,5 +314,7 @@ get-diagnostic-snapshot:
 	@echo '-----------------------------------------------------------------------------------------------------'
 	@sleep 3s
 	@gcloud compute ssh root@abm-ws --zone ${ZONE} ${CORP_SETTINGS} << EOF
-	@bmctl check cluster --snapshot --cluster ${CLUSTER_NAME} --admin-kubeconfig --kubeconfig=/root/bmctl-workspace/hybrid-cluster-001/hybrid-cluster-001-kubeconfig
+	@bmctl check cluster --snapshot-scenario all --cluster ${CLUSTER_NAME} --snapshot-config=/root/bmctl-workspace/hybrid-cluster-001/hybrid-cluster-001-kubeconfig
 	EOF
+
+# kubectl get pod -A --kubeconfig=bmctl-workspace/.kindkubeconfig
