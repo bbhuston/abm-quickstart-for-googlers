@@ -306,7 +306,7 @@ check-bootstrap-status:  ##   Check the status of ABM installation bootstrap
 	@echo '-----------------------------------------------------------------------------------------------------'
 	@sleep 3s
 	@gcloud compute ssh root@abm-ws --zone ${ZONE} ${CORP_SETTINGS} << EOF
-	@kubectl get pod -A --kubeconfig=bmctl-workspace/.kindkubeconfig
+	@kubectl get pod -A --kubeconfig=/root/bmctl-workspace/.kindkubeconfig
 	EOF
 
 get-diagnostic-snapshot:  ##  Create a diagnostic snapshot for troubleshooting
