@@ -151,10 +151,10 @@ create-vms:  ##          Create and bootstrap GCE instances
 	# Top level environmental variables are passed into the the shell script positionally
 	@/bin/bash utils/abm-vm-bootstrap.sh ${PROJECT_ID} ${ZONE} ${MACHINE_TYPE} ${VM_COUNT} ${ABM_VERSION}
 
-prepare-hybrid-cluster:  ##   Copy a hybrid cluster manifest to the workstation
+create-abm-cluster:  ##       Create an ABM cluster
 	@echo '-----------------------------------------------------------------------------------------------------'
 	@echo
-	@echo 	Creating an ABM hybrid cluster now...
+	@echo 	Creating ABM cluster "${CLUSTER_NAME}" now...
 	@echo
 	@echo '-----------------------------------------------------------------------------------------------------'
 	@sleep 3s
@@ -164,23 +164,11 @@ prepare-hybrid-cluster:  ##   Copy a hybrid cluster manifest to the workstation
 	gsutil cp gs://benhuston-abm-config-bucket/${CLUSTER_NAME}.yaml bmctl-workspace/${CLUSTER_NAME}/${CLUSTER_NAME}.yaml
 	sed -i 's/ABM_VERSION/${ABM_VERSION}/' bmctl-workspace/${CLUSTER_NAME}/${CLUSTER_NAME}.yaml
 	sed -i 's/PROJECT_ID/${PROJECT_ID}/' bmctl-workspace/${CLUSTER_NAME}/${CLUSTER_NAME}.yaml
-	bmctl create cluster -c ${CLUSTER_NAME}
-	EOF
-
-prepare-user-cluster:  ##     Copy a user cluster manifest to the workstation
-	@echo '-----------------------------------------------------------------------------------------------------'
-	@echo
-	@echo 	Creating an ABM user cluster now...
-	@echo
-	@echo '-----------------------------------------------------------------------------------------------------'
-	@sleep 3s
-	@gsutil cp abm-clusters/user-cluster-001.yaml gs://benhuston-abm-config-bucket/user-cluster-001.yaml
-	@gcloud compute ssh root@abm-ws --zone ${ZONE} ${CORP_SETTINGS} << EOF
-	mkdir -p bmctl-workspace/user-cluster-001
-	gsutil cp gs://benhuston-abm-config-bucket/user-cluster-001.yaml bmctl-workspace/user-cluster-001/user-cluster-001.yaml
-	sed -i 's/ABM_VERSION/${ABM_VERSION}/' bmctl-workspace/user-cluster-001/user-cluster-001.yaml
-	sed -i 's/PROJECT_ID/${PROJECT_ID}/' bmctl-workspace/user-cluster-001/user-cluster-001.yaml
-	bmctl create cluster -c user-cluster-001 --kubeconfig=/root/bmctl-workspace/${CLUSTER_NAME}/${CLUSTER_NAME}-kubeconfig
+	if [ ${CLUSTER_NAME} = 'hybrid-cluster-001' ]; then \
+		bmctl create cluster -c ${CLUSTER_NAME} --reuse-bootstrap-cluster; \
+	else \
+		bmctl create cluster -c ${CLUSTER_NAME} --reuse-bootstrap-cluster --kubeconfig=/root/bmctl-workspace/hybrid-cluster-001/hybrid-cluster-001-kubeconfig; \
+	fi
 	EOF
 
 ##@ Enabling Anthos Features
@@ -238,7 +226,11 @@ reset-cluster:  ##          Safely remove all cluster components
 	@echo '-----------------------------------------------------------------------------------------------------'
 	@sleep 3s
 	@gcloud compute ssh root@abm-ws --zone ${ZONE} ${CORP_SETTINGS} << EOF
-	bmctl reset --cluster ${CLUSTER_NAME}
+	if [ ${CLUSTER_NAME} = 'hybrid-cluster-001' ]; then \
+		bmctl reset --cluster ${CLUSTER_NAME}; \
+	else \
+		bmctl reset --cluster ${CLUSTER_NAME} --kubeconfig=/root/bmctl-workspace/hybrid-cluster-001/hybrid-cluster-001-kubeconfig; \
+	fi
 	EOF
 
 # TODO: Only delete instances that have the 'abm-demo' tag on them
@@ -305,3 +297,25 @@ test-cloud-build:  ##         Run a Cloud Build Hybrid job
 	@sleep 3s
 	@sed -i 's/PROJECT_ID/${PROJECT_ID}/' anthos-features/cloud-build-hybrid/deployment.yaml
 	@gcloud alpha builds submit --config=anthos-features/cloud-build-hybrid/cloud-build-hybrid-example-001.yaml --no-source --substitutions=_CLUSTER_NAME=${CLUSTER_NAME}
+
+check-bootstrap-status:  ##   Check the status of ABM installation bootstrap
+	@echo '-----------------------------------------------------------------------------------------------------'
+	@echo
+	@echo 	Checking the status of the ABM cluster bootstrap...
+	@echo
+	@echo '-----------------------------------------------------------------------------------------------------'
+	@sleep 3s
+	@gcloud compute ssh root@abm-ws --zone ${ZONE} ${CORP_SETTINGS} << EOF
+	@kubectl get pod -A --kubeconfig=/root/bmctl-workspace/.kindkubeconfig
+	EOF
+
+get-diagnostic-snapshot:  ##  Create a diagnostic snapshot for troubleshooting
+	@echo '-----------------------------------------------------------------------------------------------------'
+	@echo
+	@echo 	Creating a cluster snapshot... logs are being written to the "bmctl-workspace/${CLUSTER_NAME}/log/check-cluster" directory
+	@echo
+	@echo '-----------------------------------------------------------------------------------------------------'
+	@sleep 3s
+	@gcloud compute ssh root@abm-ws --zone ${ZONE} ${CORP_SETTINGS} << EOF
+	@bmctl check cluster --snapshot-scenario all --cluster ${CLUSTER_NAME} --snapshot-config=/root/bmctl-workspace/${CLUSTER_NAME}/${CLUSTER_NAME}-kubeconfig
+	EOF

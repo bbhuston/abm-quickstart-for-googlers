@@ -1,4 +1,4 @@
-# Provisioning an Anthos bare metal environment on GCP
+## Provisioning an Anthos bare metal environment on GCP
 
 Googlers have the ability to provision self-service Linux VMs called "CloudTop instances" which run on Google's internal infrastructure.  This guide walks Googlers through the process of using CloudTop to provision an Anthos bare metal environment inside of Google's internal `google.com` GCP Organization.  
 
@@ -69,12 +69,12 @@ make create-vms
 
 ##### Prepare an ABM hybrid cluster
 ```
-make prepare-hybrid-cluster
+make create-abm-cluster -e CLUSTER_NAME=hybrid-cluster-001
 ```
 
 ##### Prepare an ABM user cluster
 ```
-make prepare-user-cluster
+make create-abm-cluster -e CLUSTER_NAME=user-cluster-001
 ```
 
 ##### Configure Google Identity Login
@@ -109,7 +109,22 @@ Finally, run a test build to confirm that Cloud Build Hybrid is working as expec
 make test-cloud-build -e CLUSTER_NAME=hybrid-cluster-001
 ```
 
-# Cleaning up
+## Troubleshooting
+
+If you hit any issues with your ABM installation.  The following commands will generate some useful troubleshooting information.
+
+##### Check the status of the ABM bootstrap (aka kind cluster)
+```
+make check-bootstrap-status
+```
+
+##### Create a diagnostic snapshot
+```
+# For example, this generates a snapshot for a user cluster
+make get-diagnostic-snapshot -e CLUSTER_NAME=user-cluster-001
+```
+
+## Cleaning up
 
 Once you are finished experimenting with your ABM clusters, you can gracefully tear them down by running the following commands.
 
