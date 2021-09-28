@@ -154,7 +154,7 @@ create-vms:  ##          Create and bootstrap GCE instances
 create-abm-cluster:  ##       Create an ABM cluster
 	@echo '-----------------------------------------------------------------------------------------------------'
 	@echo
-	@echo 	Creating ABM cluster ${CLUSTER_NAME} now...
+	@echo 	Creating ABM cluster "${CLUSTER_NAME}" now...
 	@echo
 	@echo '-----------------------------------------------------------------------------------------------------'
 	@sleep 3s
@@ -226,7 +226,11 @@ reset-cluster:  ##          Safely remove all cluster components
 	@echo '-----------------------------------------------------------------------------------------------------'
 	@sleep 3s
 	@gcloud compute ssh root@abm-ws --zone ${ZONE} ${CORP_SETTINGS} << EOF
-	bmctl reset --cluster ${CLUSTER_NAME}
+	if [ ${CLUSTER_NAME} = 'hybrid-cluster-001' ]; then \
+		bmctl reset --cluster ${CLUSTER_NAME}; \
+	else \
+		bmctl reset --cluster ${CLUSTER_NAME} --kubeconfig=/root/bmctl-workspace/hybrid-cluster-001/hybrid-cluster-001-kubeconfig; \
+	fi
 	EOF
 
 # TODO: Only delete instances that have the 'abm-demo' tag on them
