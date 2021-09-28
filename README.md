@@ -69,12 +69,12 @@ make create-vms
 
 ##### Prepare an ABM hybrid cluster
 ```
-make prepare-hybrid-cluster
+make create-abm-cluster -e CLUSTER_NAME=hybrid-cluster-001
 ```
 
 ##### Prepare an ABM user cluster
 ```
-make prepare-user-cluster
+make create-abm-cluster -e CLUSTER_NAME=user-cluster-001
 ```
 
 ##### Configure Google Identity Login

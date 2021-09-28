@@ -151,10 +151,10 @@ create-vms:  ##          Create and bootstrap GCE instances
 	# Top level environmental variables are passed into the the shell script positionally
 	@/bin/bash utils/abm-vm-bootstrap.sh ${PROJECT_ID} ${ZONE} ${MACHINE_TYPE} ${VM_COUNT} ${ABM_VERSION}
 
-prepare-hybrid-cluster:  ##   Copy a hybrid cluster manifest to the workstation
+create-abm-cluster:  ##       Create an ABM cluster
 	@echo '-----------------------------------------------------------------------------------------------------'
 	@echo
-	@echo 	Creating an ABM hybrid cluster now...
+	@echo 	Creating ABM cluster ${CLUSTER_NAME} now...
 	@echo
 	@echo '-----------------------------------------------------------------------------------------------------'
 	@sleep 3s
@@ -169,22 +169,6 @@ prepare-hybrid-cluster:  ##   Copy a hybrid cluster manifest to the workstation
 	else \
 		bmctl create cluster -c ${CLUSTER_NAME} --reuse-bootstrap-cluster --kubeconfig=/root/bmctl-workspace/hybrid-cluster-001/hybrid-cluster-001-kubeconfig; \
 	fi
-	EOF
-
-prepare-user-cluster:  ##     Copy a user cluster manifest to the workstation
-	@echo '-----------------------------------------------------------------------------------------------------'
-	@echo
-	@echo 	Creating an ABM user cluster now...
-	@echo
-	@echo '-----------------------------------------------------------------------------------------------------'
-	@sleep 3s
-	@gsutil cp abm-clusters/${CLUSTER_NAME}.yaml gs://benhuston-abm-config-bucket/${CLUSTER_NAME}.yaml
-	@gcloud compute ssh root@abm-ws --zone ${ZONE} ${CORP_SETTINGS} << EOF
-	mkdir -p bmctl-workspace/${CLUSTER_NAME}
-	gsutil cp gs://benhuston-abm-config-bucket/${CLUSTER_NAME} bmctl-workspace/${CLUSTER_NAME}/${CLUSTER_NAME}.yaml
-	sed -i 's/ABM_VERSION/${ABM_VERSION}/' bmctl-workspace/${CLUSTER_NAME}/${CLUSTER_NAME}.yaml
-	sed -i 's/PROJECT_ID/${PROJECT_ID}/' bmctl-workspace/${CLUSTER_NAME}/${CLUSTER_NAME}.yaml
-	bmctl create cluster -c ${CLUSTER_NAME} --reuse-bootstrap-cluster --kubeconfig=/root/bmctl-workspace/hybrid-cluster-001/hybrid-cluster-001-kubeconfig
 	EOF
 
 ##@ Enabling Anthos Features
