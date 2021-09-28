@@ -164,7 +164,11 @@ prepare-hybrid-cluster:  ##   Copy a hybrid cluster manifest to the workstation
 	gsutil cp gs://benhuston-abm-config-bucket/${CLUSTER_NAME}.yaml bmctl-workspace/${CLUSTER_NAME}/${CLUSTER_NAME}.yaml
 	sed -i 's/ABM_VERSION/${ABM_VERSION}/' bmctl-workspace/${CLUSTER_NAME}/${CLUSTER_NAME}.yaml
 	sed -i 's/PROJECT_ID/${PROJECT_ID}/' bmctl-workspace/${CLUSTER_NAME}/${CLUSTER_NAME}.yaml
-	bmctl create cluster -c ${CLUSTER_NAME}
+	if [ ${CLUSTER_NAME} = 'hybrid-cluster-001' ]; then \
+ 		bmctl create cluster -c ${CLUSTER_NAME} --reuse-bootstrap-cluster; \
+	else \
+		bmctl create cluster -c ${CLUSTER_NAME} --reuse-bootstrap-cluster --kubeconfig=/root/bmctl-workspace/hybrid-cluster-001/hybrid-cluster-001-kubeconfig; \
+	fi
 	EOF
 
 prepare-user-cluster:  ##     Copy a user cluster manifest to the workstation
@@ -174,13 +178,13 @@ prepare-user-cluster:  ##     Copy a user cluster manifest to the workstation
 	@echo
 	@echo '-----------------------------------------------------------------------------------------------------'
 	@sleep 3s
-	@gsutil cp abm-clusters/user-cluster-001.yaml gs://benhuston-abm-config-bucket/user-cluster-001.yaml
+	@gsutil cp abm-clusters/${CLUSTER_NAME}.yaml gs://benhuston-abm-config-bucket/${CLUSTER_NAME}.yaml
 	@gcloud compute ssh root@abm-ws --zone ${ZONE} ${CORP_SETTINGS} << EOF
-	mkdir -p bmctl-workspace/user-cluster-001
-	gsutil cp gs://benhuston-abm-config-bucket/user-cluster-001.yaml bmctl-workspace/user-cluster-001/user-cluster-001.yaml
-	sed -i 's/ABM_VERSION/${ABM_VERSION}/' bmctl-workspace/user-cluster-001/user-cluster-001.yaml
-	sed -i 's/PROJECT_ID/${PROJECT_ID}/' bmctl-workspace/user-cluster-001/user-cluster-001.yaml
-	bmctl create cluster -c user-cluster-001 --kubeconfig=/root/bmctl-workspace/${CLUSTER_NAME}/${CLUSTER_NAME}-kubeconfig
+	mkdir -p bmctl-workspace/${CLUSTER_NAME}
+	gsutil cp gs://benhuston-abm-config-bucket/${CLUSTER_NAME} bmctl-workspace/${CLUSTER_NAME}/${CLUSTER_NAME}.yaml
+	sed -i 's/ABM_VERSION/${ABM_VERSION}/' bmctl-workspace/${CLUSTER_NAME}/${CLUSTER_NAME}.yaml
+	sed -i 's/PROJECT_ID/${PROJECT_ID}/' bmctl-workspace/${CLUSTER_NAME}/${CLUSTER_NAME}.yaml
+	bmctl create cluster -c ${CLUSTER_NAME} --reuse-bootstrap-cluster --kubeconfig=/root/bmctl-workspace/hybrid-cluster-001/hybrid-cluster-001-kubeconfig
 	EOF
 
 ##@ Enabling Anthos Features
@@ -306,15 +310,24 @@ test-cloud-build:  ##         Run a Cloud Build Hybrid job
 	@sed -i 's/PROJECT_ID/${PROJECT_ID}/' anthos-features/cloud-build-hybrid/deployment.yaml
 	@gcloud alpha builds submit --config=anthos-features/cloud-build-hybrid/cloud-build-hybrid-example-001.yaml --no-source --substitutions=_CLUSTER_NAME=${CLUSTER_NAME}
 
-get-diagnostic-snapshot:
+check-bootstrap-status:  ##   Check the status of ABM installation bootstrap
 	@echo '-----------------------------------------------------------------------------------------------------'
 	@echo
-	@echo 	Creating a cluster snapshot...
+	@echo 	Checking the status of the ABM cluster bootstrap...
 	@echo
 	@echo '-----------------------------------------------------------------------------------------------------'
 	@sleep 3s
 	@gcloud compute ssh root@abm-ws --zone ${ZONE} ${CORP_SETTINGS} << EOF
-	@bmctl check cluster --snapshot-scenario all --cluster ${CLUSTER_NAME} --snapshot-config=/root/bmctl-workspace/hybrid-cluster-001/hybrid-cluster-001-kubeconfig
+	@kubectl get pod -A --kubeconfig=bmctl-workspace/.kindkubeconfig
 	EOF
 
-# kubectl get pod -A --kubeconfig=bmctl-workspace/.kindkubeconfig
+get-diagnostic-snapshot:  ##  Create a diagnostic snapshot for troubleshooting
+	@echo '-----------------------------------------------------------------------------------------------------'
+	@echo
+	@echo 	Creating a cluster snapshot... logs are being written to the "bmctl-workspace/${CLUSTER_NAME}/log/check-cluster" directory
+	@echo
+	@echo '-----------------------------------------------------------------------------------------------------'
+	@sleep 3s
+	@gcloud compute ssh root@abm-ws --zone ${ZONE} ${CORP_SETTINGS} << EOF
+	@bmctl check cluster --snapshot-scenario all --cluster ${CLUSTER_NAME} --snapshot-config=/root/bmctl-workspace/${CLUSTER_NAME}/${CLUSTER_NAME}-kubeconfig
+	EOF
