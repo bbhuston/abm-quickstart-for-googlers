@@ -92,6 +92,23 @@ enable-gcp-apis:  ##          Enable GCP APIs
 	# Artifact Registry APIs
 	@gcloud services enable \
 		artifactregistry.googleapis.com
+	# Anthos Service Mesh
+	@gcloud services enable \
+		cloudtrace.googleapis.com \
+		cloudresourcemanager.googleapis.com \
+		container.googleapis.com \
+		compute.googleapis.com \
+		gkeconnect.googleapis.com \
+		gkehub.googleapis.com \
+		iam.googleapis.com \
+		iamcredentials.googleapis.com \
+		logging.googleapis.com \
+		meshca.googleapis.com \
+		meshtelemetry.googleapis.com \
+		meshconfig.googleapis.com \
+		monitoring.googleapis.com \
+		stackdriver.googleapis.com \
+		sts.googleapis.com
 
 configure-iam:  ##          Bind IAM permissions to a service account
 	@echo '-----------------------------------------------------------------------------------------------------'
@@ -188,6 +205,24 @@ google-identity-login:  ##    Enable Google Identity Login
 	kubectl apply -f google-identity-login-rbac.yaml --kubeconfig=/root/bmctl-workspace/${CLUSTER_NAME}/${CLUSTER_NAME}-kubeconfig
 	EOF
 
+anthos-service-mesh:  ##      Enable Anthos Service Mesh
+	@echo '-----------------------------------------------------------------------------------------------------'
+	@echo
+	@echo 	Enabling Anthos Service Mesh...
+	@echo
+	@echo '-----------------------------------------------------------------------------------------------------'
+	@sleep 3s
+	@gcloud compute ssh root@abm-ws --zone ${ZONE} ${CORP_SETTINGS} << EOF
+	curl -L https://github.com/GoogleContainerTools/kpt/releases/download/v0.39.2/kpt_linux_amd64 > kpt_0_39_2
+	chmod +x kpt_0_39_2
+	alias kpt="$(readlink -f kpt_0_39_2)"
+	kubectl create clusterrolebinding cluster-admin-binding --clusterrole=cluster-admin --user=${USER_EMAIL} --kubeconfig=/root/bmctl-workspace/${CLUSTER_NAME}/${CLUSTER_NAME}-kubeconfig
+	curl -LO https://storage.googleapis.com/gke-release/asm/istio-1.10.4-asm.14-linux-amd64.tar.gz
+	tar xzf istio-1.10.4-asm.14-linux-amd64.tar.gz
+	cd istio-1.10.4-asm.14
+
+	EOF
+
 cloud-build-hybrid:  ##       Enable Cloud Build Hybrid
 	@gcloud alpha container hub build enable
 	@gcloud alpha container hub build install --membership=projects/${PROJECT_NUMBER}/locations/global/memberships/${CLUSTER_NAME}
@@ -225,13 +260,12 @@ reset-cluster:  ##          Safely remove all cluster components
 	@echo
 	@echo '-----------------------------------------------------------------------------------------------------'
 	@sleep 3s
-	@gcloud compute ssh root@abm-ws --zone ${ZONE} ${CORP_SETTINGS} << EOF
+	@gcloud compute ssh root@abm-ws --zone ${ZONE} ${CORP_SETTINGS} << EOF \
 	if [ ${CLUSTER_NAME} = 'hybrid-cluster-001' ]; then \
 		bmctl reset --cluster ${CLUSTER_NAME}; \
 	else \
 		bmctl reset --cluster ${CLUSTER_NAME} --kubeconfig=/root/bmctl-workspace/hybrid-cluster-001/hybrid-cluster-001-kubeconfig; \
 	fi
-	EOF
 
 # TODO: Only delete instances that have the 'abm-demo' tag on them
 delete-vms: delete-keys ##          Delete all GCE instances in the current zone
@@ -286,6 +320,7 @@ test-abm-connection:  ##      Confirm the hybrid cluster is active
 	@gcloud compute ssh root@abm-ws --zone ${ZONE} ${CORP_SETTINGS} << EOF
 	kubectl cluster-info --kubeconfig=/root/bmctl-workspace/${CLUSTER_NAME}/${CLUSTER_NAME}-kubeconfig
 	kubectl get nodes --kubeconfig=/root/bmctl-workspace/${CLUSTER_NAME}/${CLUSTER_NAME}-kubeconfig
+	kubectl virt version --kubeconfig=/root/bmctl-workspace/${CLUSTER_NAME}/${CLUSTER_NAME}-kubeconfig
 	EOF
 
 test-cloud-build:  ##         Run a Cloud Build Hybrid job
@@ -306,7 +341,7 @@ check-bootstrap-status:  ##   Check the status of ABM installation bootstrap
 	@echo '-----------------------------------------------------------------------------------------------------'
 	@sleep 3s
 	@gcloud compute ssh root@abm-ws --zone ${ZONE} ${CORP_SETTINGS} << EOF
-	@kubectl get pod -A --kubeconfig=/root/bmctl-workspace/.kindkubeconfig
+	kubectl get pod -A --kubeconfig=/root/bmctl-workspace/.kindkubeconfig
 	EOF
 
 get-diagnostic-snapshot:  ##  Create a diagnostic snapshot for troubleshooting
@@ -317,5 +352,21 @@ get-diagnostic-snapshot:  ##  Create a diagnostic snapshot for troubleshooting
 	@echo '-----------------------------------------------------------------------------------------------------'
 	@sleep 3s
 	@gcloud compute ssh root@abm-ws --zone ${ZONE} ${CORP_SETTINGS} << EOF
-	@bmctl check cluster --snapshot-scenario all --cluster ${CLUSTER_NAME} --snapshot-config=/root/bmctl-workspace/${CLUSTER_NAME}/${CLUSTER_NAME}-kubeconfig
+	bmctl check cluster --snapshot-scenario all --cluster ${CLUSTER_NAME} --snapshot-config=/root/bmctl-workspace/${CLUSTER_NAME}/${CLUSTER_NAME}-kubeconfig
 	EOF
+
+upload-kubevirt-image:
+	# TODO
+	@echo '-----------------------------------------------------------------------------------------------------'
+	@echo
+	@echo 	Uploading KubeVirt ABM...
+	@echo
+	@echo '-----------------------------------------------------------------------------------------------------'
+	@sleep 3s
+	@gcloud compute ssh root@abm-ws --zone ${ZONE} ${CORP_SETTINGS} << EOF
+	# gsutil cp gs://benhuston-abm-config-bucket/9600.17050.WINBLUE_REFRESH.140317-1640_X64FRE_SERVER_EVAL_EN-US-IR3_SSS_X64FREE_EN-US_DV9.ISO 9600.17050.WINBLUE_REFRESH.140317-1640_X64FRE_SERVER_EVAL_EN-US-IR3_SSS_X64FREE_EN-US_DV9.ISO
+	# sleep 180s
+	# kubectl get svc -n cdi --kubeconfig=/root/bmctl-workspace/${CLUSTER_NAME}/${CLUSTER_NAME}-kubeconfig
+	kubectl virt image-upload --image-path=/root/9600.17050.WINBLUE_REFRESH.140317-1640_X64FRE_SERVER_EVAL_EN-US-IR3_SSS_X64FREE_EN-US_DV9.ISO --pvc-name=windows-iso-pvc --access-mode=ReadWriteOnce --pvc-size=10G --uploadproxy-url=https://10.200.0.70:443 --insecure --wait-secs=240 --storage-class=standard --kubeconfig=/root/bmctl-workspace/${CLUSTER_NAME}/${CLUSTER_NAME}-kubeconfig
+	EOF
+
