@@ -369,4 +369,3 @@ upload-kubevirt-image:
 	# kubectl get svc -n cdi --kubeconfig=/root/bmctl-workspace/${CLUSTER_NAME}/${CLUSTER_NAME}-kubeconfig
 	kubectl virt image-upload --image-path=/root/9600.17050.WINBLUE_REFRESH.140317-1640_X64FRE_SERVER_EVAL_EN-US-IR3_SSS_X64FREE_EN-US_DV9.ISO --pvc-name=windows-iso-pvc --access-mode=ReadWriteOnce --pvc-size=10G --uploadproxy-url=https://10.200.0.70:443 --insecure --wait-secs=240 --storage-class=standard --kubeconfig=/root/bmctl-workspace/${CLUSTER_NAME}/${CLUSTER_NAME}-kubeconfig
 	EOF
-

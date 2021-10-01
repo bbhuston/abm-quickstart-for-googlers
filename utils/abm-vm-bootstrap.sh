@@ -78,7 +78,7 @@ EOF
     i=$((i+1))
 done
 
-# Provision ABM prequsites on the ABM workstation
+# Provision ABM prerequisites on the ABM workstation
 gcloud compute ssh root@$VM_WS --zone ${ZONE} "${EXTRA_SSH_ARGS[@]}" << EOF
 set -x
 
@@ -116,7 +116,13 @@ kubectl krew
 
 echo "Installing Virt plugin"
 kubectl krew install virt
+
+#echo "Rebooting to ensure new bashrc changes take effect"
+#reboot
 EOF
+
+# Wait for reboot to complete
+# sleep 40s
 
 # Register the ABM workstation's SSH public key with each VM
 gcloud compute ssh root@$VM_WS --zone ${ZONE} "${EXTRA_SSH_ARGS[@]}" << EOF
