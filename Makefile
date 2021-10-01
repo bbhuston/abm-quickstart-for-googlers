@@ -318,6 +318,7 @@ test-abm-connection:  ##      Confirm the hybrid cluster is active
 	@echo '-----------------------------------------------------------------------------------------------------'
 	@sleep 3s
 	@gcloud compute ssh root@abm-ws --zone ${ZONE} ${CORP_SETTINGS} << EOF
+	source ~/.bashrc
 	kubectl cluster-info --kubeconfig=/root/bmctl-workspace/${CLUSTER_NAME}/${CLUSTER_NAME}-kubeconfig
 	kubectl get nodes --kubeconfig=/root/bmctl-workspace/${CLUSTER_NAME}/${CLUSTER_NAME}-kubeconfig
 	kubectl virt version --kubeconfig=/root/bmctl-workspace/${CLUSTER_NAME}/${CLUSTER_NAME}-kubeconfig
@@ -364,6 +365,7 @@ upload-kubevirt-image:
 	@echo '-----------------------------------------------------------------------------------------------------'
 	@sleep 3s
 	@gcloud compute ssh root@abm-ws --zone ${ZONE} ${CORP_SETTINGS} << EOF
+	source ~/.bashrc
 	# gsutil cp gs://benhuston-abm-config-bucket/9600.17050.WINBLUE_REFRESH.140317-1640_X64FRE_SERVER_EVAL_EN-US-IR3_SSS_X64FREE_EN-US_DV9.ISO 9600.17050.WINBLUE_REFRESH.140317-1640_X64FRE_SERVER_EVAL_EN-US-IR3_SSS_X64FREE_EN-US_DV9.ISO
 	# sleep 180s
 	# kubectl get svc -n cdi --kubeconfig=/root/bmctl-workspace/${CLUSTER_NAME}/${CLUSTER_NAME}-kubeconfig

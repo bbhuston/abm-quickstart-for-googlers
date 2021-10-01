@@ -24,7 +24,7 @@ Now you are ready to run the following commands from inside your new CloudTop se
 ```
 git clone https://github.com/bbhuston/abm-quickstart-for-googlers.git
 cd abm-quickstart-for-googlers
-git fetch && git checkout v0.1.2
+git fetch && git checkout v0.1.3
 ```
 
 ##### Check out available commands 
