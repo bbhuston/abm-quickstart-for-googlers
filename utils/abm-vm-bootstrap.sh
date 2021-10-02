@@ -111,7 +111,7 @@ echo "Installing Krew"
   KREW=./krew-"${OS}_${ARCH}" &&
   "$KREW" install krew
 )
-mv .krew/store/krew/v0.4.1/krew /usr/local/sbin/source ~/.bashrc
+mv .krew/store/krew/v0.4.1/krew /usr/local/sbin/
 krew version
 
 echo "Installing Virt plugin"
