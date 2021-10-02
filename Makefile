@@ -360,7 +360,7 @@ get-diagnostic-snapshot:  ##  Create a diagnostic snapshot for troubleshooting
 	bmctl check cluster --snapshot-scenario all --cluster ${CLUSTER_NAME} --snapshot-config=/root/bmctl-workspace/${CLUSTER_NAME}/${CLUSTER_NAME}-kubeconfig
 	EOF
 
-upload-kubevirt-image:  ##    Upload a VM image to KubeVirt
+upload-kubevirt-image: check-for-existing-image  ##    Upload a VM image to KubeVirt
 	TODO: Add check for preexisting VM image file
 	@echo '-----------------------------------------------------------------------------------------------------'
 	@echo
@@ -369,14 +369,18 @@ upload-kubevirt-image:  ##    Upload a VM image to KubeVirt
 	@echo '-----------------------------------------------------------------------------------------------------'
 	@sleep 3s
 	@gcloud compute ssh root@abm-ws --zone ${ZONE} ${CORP_SETTINGS} << EOF
-	# if [ ! -f ${KUBEVIRT_IMAGE}.ISO ]; then \
-	# 	gsutil cp gs://${PROJECT_ID}-config-bucket/${KUBEVIRT_IMAGE}.ISO ${KUBEVIRT_IMAGE}.ISO \
-	# fi
 	kubectl get svc cdi-uploadproxy -n cdi --no-headers=true --kubeconfig=/root/bmctl-workspace/${CLUSTER_NAME}/${CLUSTER_NAME}-kubeconfig | awk '{print $4}' | tail -n +2 > temp.txt
+	cat temp.txt
 	# UPLOAD_PROXY_IP=$$(kubectl get svc cdi-uploadproxy -n cdi --no-headers=true --kubeconfig=/root/bmctl-workspace/${CLUSTER_NAME}/${CLUSTER_NAME}-kubeconfig | awk '{print $$4}')
 	while read line; \
 		do echo $$line && virtctl image-upload --image-path=/root/${KUBEVIRT_IMAGE}.ISO --pvc-name=${KUBEVIRT_IMAGE}-pvc --access-mode=ReadWriteOnce --pvc-size=10G --uploadproxy-url=https://$$line:443 --insecure --wait-secs=240 --storage-class=standard --kubeconfig=/root/bmctl-workspace/${CLUSTER_NAME}/${CLUSTER_NAME}-kubeconfig; \
 	done < temp.txt; rm temp.txt
 	EOF
 
-# 	UPLOAD_PROXY_IP=$(kubectl get svc cdi-uploadproxy -n cdi --no-headers=true --kubeconfig=$KUBECONFIG | awk '{print $4}')
+check-for-existing-image:
+	# Check for an existing image before downloading
+	@gcloud compute ssh root@abm-ws --zone ${ZONE} ${CORP_SETTINGS} << EOF
+	if [ ! -f ${KUBEVIRT_IMAGE}.ISO ]; then \
+		gsutil cp gs://${PROJECT_ID}-config-bucket/${KUBEVIRT_IMAGE}.ISO ${KUBEVIRT_IMAGE}.ISO \
+	fi
+	EOF
