@@ -18,6 +18,25 @@ ssh ${CLOUDTOP_ALIAS}.c.googlers.com
 gcert
 ```
 
+##### Installing CLI tooling on your new CloudTop instance.
+
+New Linux CloudTop instances have neither `gcloud` nor `kubectl` installed on them by default.  The first time you access your CloudTop instance you will need to run the following commands to download these CLI tools.
+
+*NOTE: This step only needs to done once.*
+
+```
+# Install gcloud and kubectl
+echo "deb [signed-by=/usr/share/keyrings/cloud.google.gpg] https://packages.cloud.google.com/apt cloud-sdk main" | sudo tee -a /etc/apt/sources.list.d/google-cloud-sdk.list
+sudo apt-get install apt-transport-https ca-certificates gnupg
+curl https://packages.cloud.google.com/apt/doc/apt-key.gpg | sudo apt-key --keyring /usr/share/keyrings/cloud.google.gpg add -
+sudo apt-get update && sudo apt-get install google-cloud-sdk
+sudo apt-get install google-cloud-sdk-app-engine-java
+sudo apt-get install kubectl
+
+# Authenticate with gcloud
+gcloud auth login
+```
+
 Now you are ready to run the following commands from inside your new CloudTop session.
 
 ##### Download quickstart repo
