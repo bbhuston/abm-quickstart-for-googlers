@@ -381,6 +381,6 @@ check-for-existing-image:
 	# Check for an existing image before downloading
 	@gcloud compute ssh root@abm-ws --zone ${ZONE} ${CORP_SETTINGS} << EOF
 	if [ ! -f ${KUBEVIRT_IMAGE}.ISO ]; then \
-		gsutil cp gs://${PROJECT_ID}-config-bucket/${KUBEVIRT_IMAGE}.ISO ${KUBEVIRT_IMAGE}.ISO \
+		gsutil cp gs://${PROJECT_ID}-config-bucket/${KUBEVIRT_IMAGE}.ISO ${KUBEVIRT_IMAGE}.ISO; \
 	fi
 	EOF
