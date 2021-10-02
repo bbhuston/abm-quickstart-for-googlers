@@ -321,7 +321,7 @@ test-abm-connection:  ##      Confirm the hybrid cluster is active
 	@gcloud compute ssh root@abm-ws --zone ${ZONE} ${CORP_SETTINGS} << EOF
 	kubectl cluster-info --kubeconfig=/root/bmctl-workspace/${CLUSTER_NAME}/${CLUSTER_NAME}-kubeconfig
 	kubectl get nodes --kubeconfig=/root/bmctl-workspace/${CLUSTER_NAME}/${CLUSTER_NAME}-kubeconfig
-	kubectl virt version --kubeconfig=/root/bmctl-workspace/${CLUSTER_NAME}/${CLUSTER_NAME}-kubeconfig
+	virtctl version --kubeconfig=/root/bmctl-workspace/${CLUSTER_NAME}/${CLUSTER_NAME}-kubeconfig
 	EOF
 
 test-cloud-build:  ##         Run a Cloud Build Hybrid job
@@ -368,5 +368,5 @@ upload-kubevirt-image:
 	gsutil cp gs://${PROJECT_ID}-abm-config-bucket/9600.17050.WINBLUE_REFRESH.140317-1640_X64FRE_SERVER_EVAL_EN-US-IR3_SSS_X64FREE_EN-US_DV9.ISO 9600.17050.WINBLUE_REFRESH.140317-1640_X64FRE_SERVER_EVAL_EN-US-IR3_SSS_X64FREE_EN-US_DV9.ISO
 	#sleep 180s
 	# kubectl get svc -n cdi --kubeconfig=/root/bmctl-workspace/${CLUSTER_NAME}/${CLUSTER_NAME}-kubeconfig
-	#kubectl virt image-upload --image-path=/root/9600.17050.WINBLUE_REFRESH.140317-1640_X64FRE_SERVER_EVAL_EN-US-IR3_SSS_X64FREE_EN-US_DV9.ISO --pvc-name=windows-iso-pvc --access-mode=ReadWriteOnce --pvc-size=10G --uploadproxy-url=https://10.200.0.70:443 --insecure --wait-secs=240 --storage-class=standard --kubeconfig=/root/bmctl-workspace/${CLUSTER_NAME}/${CLUSTER_NAME}-kubeconfig
+	# virtctl image-upload --image-path=/root/9600.17050.WINBLUE_REFRESH.140317-1640_X64FRE_SERVER_EVAL_EN-US-IR3_SSS_X64FREE_EN-US_DV9.ISO --pvc-name=windows-iso-pvc --access-mode=ReadWriteOnce --pvc-size=10G --uploadproxy-url=https://10.200.0.70:443 --insecure --wait-secs=240 --storage-class=standard --kubeconfig=/root/bmctl-workspace/${CLUSTER_NAME}/${CLUSTER_NAME}-kubeconfig
 	EOF

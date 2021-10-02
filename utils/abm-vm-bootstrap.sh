@@ -118,6 +118,13 @@ echo "Installing Virt plugin"
 krew install virt
 kubectl virt
 
+echo "Installing stand-alone virtctl"
+VERSION=v0.45.0
+wget https://github.com/kubevirt/kubevirt/releases/download/${VERSION}/virtctl-${VERSION}-linux-amd64
+chmod +x mv virtctl-${VERSION}-linux-amd64
+mv virtctl-${VERSION}-linux-amd64 /usr/local/sbin/virtctl
+virtctl help
+
 EOF
 
 # Register the ABM workstation's SSH public key with each VM
