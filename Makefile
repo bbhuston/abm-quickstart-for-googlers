@@ -361,7 +361,7 @@ get-diagnostic-snapshot:  ##  Create a diagnostic snapshot for troubleshooting
 	EOF
 
 upload-kubevirt-image:  ##    Upload a VM image to KubeVirt
-	# TODO: Dynamically find upload proxy IP
+	# TODO: Dynamically find upload proxy IP.  Current setup hardcoded to hybrid-cluster-001
 	@echo '-----------------------------------------------------------------------------------------------------'
 	@echo
 	@echo 	Uploading KubeVirt ABM...
