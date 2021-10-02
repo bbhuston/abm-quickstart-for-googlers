@@ -361,7 +361,7 @@ get-diagnostic-snapshot:  ##  Create a diagnostic snapshot for troubleshooting
 	EOF
 
 upload-kubevirt-image: check-for-existing-image  ##    Upload a VM image to KubeVirt
-	TODO: Add check for preexisting VM image file
+	# TODO: Add check for preexisting VM image file
 	@echo '-----------------------------------------------------------------------------------------------------'
 	@echo
 	@echo 	Uploading KubeVirt ABM...
