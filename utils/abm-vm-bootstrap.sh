@@ -111,20 +111,14 @@ echo "Installing Krew"
   KREW=./krew-"${OS}_${ARCH}" &&
   "$KREW" install krew
 )
-mv .krew /usr/local/sbin/
-echo 'export PATH="${KREW_ROOT:-/usr/local/sbin/.krew}/bin:$PATH"' >> ~/.bashrc
-source ~/.bashrc
-kubectl krew
+mv .krew/store/krew/v0.4.1/krew /usr/local/sbin/source ~/.bashrc
+krew version
 
 echo "Installing Virt plugin"
-kubectl krew install virt
+krew install virt
+kubectl virt
 
-#echo "Rebooting to ensure new bashrc changes take effect"
-#reboot
 EOF
-
-# Wait for reboot to complete
-# sleep 40s
 
 # Register the ABM workstation's SSH public key with each VM
 gcloud compute ssh root@$VM_WS --zone ${ZONE} "${EXTRA_SSH_ARGS[@]}" << EOF
