@@ -368,12 +368,12 @@ upload-kubevirt-image:  ##    Upload a VM image to KubeVirt
 	@echo '-----------------------------------------------------------------------------------------------------'
 	@sleep 3s
 	@gcloud compute ssh root@abm-ws --zone ${ZONE} ${CORP_SETTINGS} << EOF
-	if [ ! -f ${KUBEVIRT_IMAGE}.ISO ]; then gsutil cp gs://${PROJECT_ID}-config-bucket/${KUBEVIRT_IMAGE}.ISO ${KUBEVIRT_IMAGE}.ISO fi
-	kubectl get svc cdi-uploadproxy -n cdi --no-headers=true --kubeconfig=/root/bmctl-workspace/${CLUSTER_NAME}/${CLUSTER_NAME}-kubeconfig | awk '{print $$4}' | tail -n +2 > temp.txt
+	if [ ! -f ${KUBEVIRT_IMAGE}.ISO ]; then \
+		gsutil cp gs://${PROJECT_ID}-config-bucket/${KUBEVIRT_IMAGE}.ISO ${KUBEVIRT_IMAGE}.ISO \
+	fi \
+	kubectl get svc cdi-uploadproxy -n cdi --no-headers=true --kubeconfig=/root/bmctl-workspace/${CLUSTER_NAME}/${CLUSTER_NAME}-kubeconfig | awk '{print $$4}' | tail -n +2 > temp.txt \
 	EOF
-
 	#	while read line; do UPLOAD_PROXY_IP=$$line; done < temp.txt; rm temp.txt
 	#	virtctl image-upload --image-path=/root/${KUBEVIRT_IMAGE}.ISO --pvc-name=${KUBEVIRT_IMAGE}-pvc --access-mode=ReadWriteOnce --pvc-size=10G --uploadproxy-url=https://$$UPLOAD_PROXY_IP:443 --insecure --wait-secs=240 --storage-class=standard --kubeconfig=/root/bmctl-workspace/${CLUSTER_NAME}/${CLUSTER_NAME}-kubeconfig
-
 
 # 	UPLOAD_PROXY_IP=$(kubectl get svc cdi-uploadproxy -n cdi --no-headers=true --kubeconfig=$KUBECONFIG | awk '{print $4}')
