@@ -100,6 +100,7 @@ echo "Installing docker"
 curl -fsSL https://get.docker.com -o get-docker.sh
 sh get-docker.sh
 
+cd ~
 echo "Installing Krew"
 (
   set -x; cd "$(mktemp -d)" &&
@@ -110,7 +111,8 @@ echo "Installing Krew"
   KREW=./krew-"${OS}_${ARCH}" &&
   "$KREW" install krew
 )
-echo 'export PATH="${KREW_ROOT:-$HOME/.krew}/bin:$PATH"' >> ~/.bashrc
+mv .krew /usr/local/sbin/
+echo 'export PATH="${KREW_ROOT:-/usr/local/sbin/.krew}/bin:$PATH"' >> ~/.bashrc
 source ~/.bashrc
 kubectl krew
 
