@@ -13,7 +13,11 @@ VM_COUNT=10
 ABM_VERSION=1.8.4
 ASM_VERSION=asm-178-8
 # Name of default cluster to enable Anthos features on
+# Options are: 'hybrid-cluster-001', 'user-cluster-001'
 CLUSTER_NAME=hybrid-cluster-001
+# Name of default KubeVirt VM image to upload to ABM clusters
+# Options are: 'windows-server-2012-r2', [more coming soon] ...
+KUBEVIRT_IMAGE=windows-server-2012-r2
 
 # Source important variables that need to be persisted and are easy to forget about
 -include utils/env
@@ -268,8 +272,8 @@ reset-cluster:  ##          Safely remove all cluster components
 	fi
 	EOF
 
-# TODO: Only delete instances that have the 'abm-demo' tag on them
 delete-vms: delete-keys ##          Delete all GCE instances in the current zone
+	# TODO: Only delete instances that have the 'abm-demo' tag on them
 	@echo '-----------------------------------------------------------------------------------------------------'
 	@echo
 	@echo 	Deleting VMs...
@@ -356,8 +360,7 @@ get-diagnostic-snapshot:  ##  Create a diagnostic snapshot for troubleshooting
 	bmctl check cluster --snapshot-scenario all --cluster ${CLUSTER_NAME} --snapshot-config=/root/bmctl-workspace/${CLUSTER_NAME}/${CLUSTER_NAME}-kubeconfig
 	EOF
 
-upload-kubevirt-image:
-	# TODO
+upload-kubevirt-image:  ##    Upload a VM image to KubeVirt
 	@echo '-----------------------------------------------------------------------------------------------------'
 	@echo
 	@echo 	Uploading KubeVirt ABM...
@@ -365,8 +368,7 @@ upload-kubevirt-image:
 	@echo '-----------------------------------------------------------------------------------------------------'
 	@sleep 3s
 	@gcloud compute ssh root@abm-ws --zone ${ZONE} ${CORP_SETTINGS} << EOF
-	gsutil cp gs://${PROJECT_ID}-config-bucket/9600.17050.WINBLUE_REFRESH.140317-1640_X64FRE_SERVER_EVAL_EN-US-IR3_SSS_X64FREE_EN-US_DV9.ISO 9600.17050.WINBLUE_REFRESH.140317-1640_X64FRE_SERVER_EVAL_EN-US-IR3_SSS_X64FREE_EN-US_DV9.ISO
-	#sleep 180s
-	# kubectl get svc -n cdi --kubeconfig=/root/bmctl-workspace/${CLUSTER_NAME}/${CLUSTER_NAME}-kubeconfig
-	# virtctl image-upload --image-path=/root/9600.17050.WINBLUE_REFRESH.140317-1640_X64FRE_SERVER_EVAL_EN-US-IR3_SSS_X64FREE_EN-US_DV9.ISO --pvc-name=windows-iso-pvc --access-mode=ReadWriteOnce --pvc-size=10G --uploadproxy-url=https://10.200.0.70:443 --insecure --wait-secs=240 --storage-class=standard --kubeconfig=/root/bmctl-workspace/${CLUSTER_NAME}/${CLUSTER_NAME}-kubeconfig
+	#gsutil cp gs://${PROJECT_ID}-config-bucket/${KUBEVIRT_IMAGE}.ISO ${KUBEVIRT_IMAGE}.ISO
+	UPLOAD_PROXY_IP=$$(kubectl get svc cdi-uploadproxy -n cdi --no-headers=true  --kubeconfig=/root/bmctl-workspace/${CLUSTER_NAME}/${CLUSTER_NAME}-kubeconfig | awk '{print $4}')
+	virtctl image-upload --image-path=/root/${KUBEVIRT_IMAGE}.ISO --pvc-name=${KUBEVIRT_IMAGE}-pvc --access-mode=ReadWriteOnce --pvc-size=10G --uploadproxy-url=https://$$UPLOAD_PROXY_IP:443 --insecure --wait-secs=240 --storage-class=standard --kubeconfig=/root/bmctl-workspace/${CLUSTER_NAME}/${CLUSTER_NAME}-kubeconfig
 	EOF
