@@ -371,12 +371,12 @@ upload-kubevirt-image: check-for-existing-image  ##    Upload a VM image to Kube
 	@gcloud compute ssh root@abm-ws --zone ${ZONE} ${CORP_SETTINGS} << EOF
 	#kubectl get svc cdi-uploadproxy -n cdi --no-headers=true --kubeconfig=/root/bmctl-workspace/${CLUSTER_NAME}/${CLUSTER_NAME}-kubeconfig | awk '{print $$4}' > temp.txt
 	#cat temp.txt
-	UPLOAD_PROXY_IP=$(kubectl get svc cdi-uploadproxy -n cdi --no-headers=true --kubeconfig=/root/bmctl-workspace/${CLUSTER_NAME}/${CLUSTER_NAME}-kubeconfig | awk '{print $4}')
+	UPLOAD_PROXY_IP=$(kubectl get svc cdi-uploadproxy -n cdi --no-headers=true --kubeconfig=/root/bmctl-workspace/${CLUSTER_NAME}/${CLUSTER_NAME}-kubeconfig | awk '{print $$4}')
 	echo $$UPLOAD_PROXY_IP
 	# virtctl image-upload --image-path=/root/${KUBEVIRT_IMAGE}.ISO --pvc-name=${KUBEVIRT_IMAGE}-pvc --access-mode=ReadWriteOnce --pvc-size=10G --uploadproxy-url=https://$$UPLOAD_PROXY_IP:443 --insecure --wait-secs=240 --storage-class=standard --kubeconfig=/root/bmctl-workspace/${CLUSTER_NAME}/${CLUSTER_NAME}-kubeconfig
-	while read line; \
-		do echo $$line \
-	done < temp.txt; rm temp.txt
+	#	while read line; \
+	#		do echo $$line \
+	#	done < temp.txt; rm temp.txt
 	EOF
 
 check-for-existing-image:
