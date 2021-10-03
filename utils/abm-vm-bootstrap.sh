@@ -125,6 +125,8 @@ chmod +x mv virtctl-${VERSION}-linux-amd64
 mv virtctl-${VERSION}-linux-amd64 /usr/local/sbin/virtctl
 virtctl help
 
+echo "Installing vnc package for virtctl"
+apt-get install -y virt-viewer
 EOF
 
 # Register the ABM workstation's SSH public key with each VM

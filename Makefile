@@ -399,5 +399,6 @@ connect-to-kubevirt-vm:  ##   SSH/RDP into a KubeVirt VM
 	@echo '-----------------------------------------------------------------------------------------------------'
 	@sleep 3s
 	@gcloud compute ssh root@abm-ws --zone ${ZONE} ${CORP_SETTINGS} << EOF
+	kubectl get vmi --kubeconfig=/root/bmctl-workspace/${CLUSTER_NAME}/${CLUSTER_NAME}-kubeconfig
 	virtctl vnc ${KUBEVIRT_VM_NAME} --kubeconfig=/root/bmctl-workspace/${CLUSTER_NAME}/${CLUSTER_NAME}-kubeconfig
 	EOF
