@@ -125,4 +125,4 @@ spec:
           claimName: KUBEVIRT_IMAGE-util-disk
       - containerDisk:
           image: kubevirt/virtio-container-disk
-        name: virtio-container-disk-util
+        name: virtio-container-util-disk
