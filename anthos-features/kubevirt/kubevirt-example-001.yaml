@@ -1,3 +1,4 @@
+# Example VM
 ---
 apiVersion: v1
 kind: PersistentVolumeClaim
@@ -59,3 +60,69 @@ spec:
       - containerDisk:
           image: kubevirt/virtio-container-disk
         name: virtio-container-disk
+
+# Utility VM
+---
+apiVersion: cdi.kubevirt.io/v1alpha1
+kind: DataVolume
+metadata:
+  name: KUBEVIRT_IMAGE-util-disk
+spec:
+  source:
+    blank: {}
+  pvc:
+    accessModes:
+    - ReadWriteOnce
+    resources:
+      requests:
+        storage: 15G
+    storageClassName: standard
+---
+apiVersion: kubevirt.io/v1alpha3
+kind: VirtualMachine
+metadata:
+  name: KUBEVIRT_IMAGE-util-vm
+spec:
+  running: true
+  template:
+    metadata:
+      labels:
+        kubevirt.io/domain: kubevirt-vm
+    spec:
+      domain:
+        cpu:
+          cores: 2
+        devices:
+          disks:
+          - name: cdromiso
+            cdrom:
+              bus: sata
+            bootOrder: 1
+          - name: harddrive
+            disk:
+              bus: virtio
+          - name: virtio-container-util-disk
+            cdrom:
+              bus: sata
+          interfaces:
+          - name: default
+            masquerade: {}
+        machine:
+          type: q35
+        resources:
+          requests:
+            memory: 8G
+      networks:
+      - name: default
+        pod: {}
+      terminationGracePeriodSeconds: 0
+      volumes:
+      - name: cdromiso
+        persistentVolumeClaim:
+          claimName: KUBEVIRT_IMAGE-util-pvc
+      - name: harddrive
+        persistentVolumeClaim:
+          claimName: KUBEVIRT_IMAGE-util-disk
+      - containerDisk:
+          image: kubevirt/virtio-container-disk
+        name: virtio-container-disk-util
