@@ -128,6 +128,28 @@ Finally, run a test build to confirm that Cloud Build Hybrid is working as expec
 make test-cloud-build -e CLUSTER_NAME=hybrid-cluster-001
 ```
 
+##### Experiment with KubeVirt
+
+Upload a KubeVirt image.  The default KubeVirt example image is 'windows-server-2012-r2'
+```
+make upload-kubevirt-image
+```
+
+Create a KubeVirt VM
+```
+make create-kubevirt-vm
+```
+
+Connect to your new KubeVirt VM
+```
+# This connects to an example VM
+make connect-to-kubevirt-vm -e KUBEVIRT_VM_NAME=windows-server-2012-r2-vm
+
+# This connects to a utility VM that can be used for troubleshooting
+make connect-to-kubevirt-vm -e KUBEVIRT_VM_NAME=windows-server-2012-r2-util-vm
+```
+
+
 ## Troubleshooting
 
 If you hit any issues with your ABM installation.  The following commands will generate some useful troubleshooting information.
