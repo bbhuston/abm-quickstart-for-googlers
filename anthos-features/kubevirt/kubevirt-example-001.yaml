@@ -1,0 +1,61 @@
+---
+apiVersion: v1
+kind: PersistentVolumeClaim
+metadata:
+  name: KUBEVIRT_IMAGE-disk
+spec:
+  accessModes:
+  - ReadWriteOnce
+  resources:
+    requests:
+      storage: 30Gi
+  storageClassName: standard
+---
+apiVersion: kubevirt.io/v1alpha3
+kind: VirtualMachine
+metadata:
+  name: KUBEVIRT_IMAGE-vm
+spec:
+  running: true
+  template:
+    metadata:
+      labels:
+        kubevirt.io/domain: kubevirt-vm
+    spec:
+      domain:
+        cpu:
+          cores: 4
+        devices:
+          disks:
+          - name: cdromiso
+            cdrom:
+              bus: sata
+            bootOrder: 1
+          - name: harddrive
+            disk:
+              bus: virtio
+          - name: virtio-container-disk
+            cdrom:
+              bus: sata
+          interfaces:
+          - name: default
+            masquerade: {}
+        machine:
+          type: q35
+        resources:
+          requests:
+            memory: 10G
+      networks:
+      - name: default
+        pod: {}
+      terminationGracePeriodSeconds: 0
+      volumes:
+      - name: cdromiso
+        persistentVolumeClaim:
+          claimName: KUBEVIRT_IMAGE-pvc
+      - name: harddrive
+        persistentVolumeClaim:
+          claimName: KUBEVIRT_IMAGE-disk
+      - containerDisk:
+          image: kubevirt/virtio-container-disk
+        name: virtio-container-disk

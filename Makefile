@@ -364,7 +364,7 @@ upload-kubevirt-image:  ##    Upload a VM image to KubeVirt
 	# TODO: Dynamically find upload proxy IP.  Current setup is hardcoded to hybrid-cluster-001
 	@echo '-----------------------------------------------------------------------------------------------------'
 	@echo
-	@echo 	Uploading KubeVirt ABM...
+	@echo 	Uploading a KubeVirt image...
 	@echo
 	@echo '-----------------------------------------------------------------------------------------------------'
 	@sleep 3s
@@ -374,4 +374,18 @@ upload-kubevirt-image:  ##    Upload a VM image to KubeVirt
 	fi
 	# UPLOAD_PROXY_IP=$$(kubectl get svc cdi-uploadproxy -n cdi --no-headers=true --kubeconfig=/root/bmctl-workspace/${CLUSTER_NAME}/${CLUSTER_NAME}-kubeconfig | awk '{print $$4}')
 	virtctl image-upload --image-path=/root/${KUBEVIRT_IMAGE}.ISO --pvc-name=${KUBEVIRT_IMAGE}-pvc --access-mode=ReadWriteOnce --pvc-size=10G --uploadproxy-url=https://10.200.0.70:443 --insecure --wait-secs=240 --storage-class=standard --kubeconfig=/root/bmctl-workspace/${CLUSTER_NAME}/${CLUSTER_NAME}-kubeconfig
+	EOF
+
+create-kubevirt-vm:  ##       Create a KubeVirt VM
+	@echo '-----------------------------------------------------------------------------------------------------'
+	@echo
+	@echo 	Creating a KubeVirt VM...
+	@echo
+	@echo '-----------------------------------------------------------------------------------------------------'
+	@sleep 3s
+	@gsutil cp anthos-features/kubevirt/kubevirt-example-001.yaml gs://${PROJECT_ID}-config-bucket/kubevirt-example-001.yaml
+	@gcloud compute ssh root@abm-ws --zone ${ZONE} ${CORP_SETTINGS} << EOF
+	gsutil cp gs://${PROJECT_ID}-config-bucket/kubevirt-example-001.yaml kubevirt-example-001.yaml
+	sed -i 's/KUBEVIRT_IMAGE/${KUBEVIRT_IMAGE}/' kubevirt-example-001.yaml
+	kubectl apply -f kubevirt-example-001.yaml --kubeconfig=/root/bmctl-workspace/${CLUSTER_NAME}/${CLUSTER_NAME}-kubeconfig
 	EOF
