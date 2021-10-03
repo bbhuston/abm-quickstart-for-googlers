@@ -158,10 +158,10 @@ create-abm-cluster:  ##       Create an ABM cluster
 	@echo
 	@echo '-----------------------------------------------------------------------------------------------------'
 	@sleep 3s
-	@gsutil cp abm-clusters/${CLUSTER_NAME}.yaml gs://${PROJECT_ID}-abm-config-bucket/${CLUSTER_NAME}.yaml
+	@gsutil cp abm-clusters/${CLUSTER_NAME}.yaml gs://${PROJECT_ID}-config-bucket/${CLUSTER_NAME}.yaml
 	@gcloud compute ssh root@abm-ws --zone ${ZONE} ${CORP_SETTINGS} << EOF
 	mkdir -p bmctl-workspace/${CLUSTER_NAME}
-	gsutil cp gs://${PROJECT_ID}-abm-config-bucket/${CLUSTER_NAME}.yaml bmctl-workspace/${CLUSTER_NAME}/${CLUSTER_NAME}.yaml
+	gsutil cp gs://${PROJECT_ID}-config-bucket/${CLUSTER_NAME}.yaml bmctl-workspace/${CLUSTER_NAME}/${CLUSTER_NAME}.yaml
 	sed -i 's/ABM_VERSION/${ABM_VERSION}/' bmctl-workspace/${CLUSTER_NAME}/${CLUSTER_NAME}.yaml
 	sed -i 's/PROJECT_ID/${PROJECT_ID}/' bmctl-workspace/${CLUSTER_NAME}/${CLUSTER_NAME}.yaml
 	if [ ${CLUSTER_NAME} = 'hybrid-cluster-001' ]; then \
@@ -180,9 +180,9 @@ google-identity-login:  ##    Enable Google Identity Login
 	@echo
 	@echo '-----------------------------------------------------------------------------------------------------'
 	@sleep 3s
-	@gsutil cp anthos-features/google-identity-login/google-identity-login-rbac.yaml gs://${PROJECT_ID}-abm-config-bucket/google-identity-login-rbac.yaml
+	@gsutil cp anthos-features/google-identity-login/google-identity-login-rbac.yaml gs://${PROJECT_ID}-config-bucket/google-identity-login-rbac.yaml
 	@gcloud compute ssh root@abm-ws --zone ${ZONE} ${CORP_SETTINGS} << EOF
-	@gsutil cp gs://${PROJECT_ID}-abm-config-bucket/google-identity-login-rbac.yaml google-identity-login-rbac.yaml
+	@gsutil cp gs://${PROJECT_ID}-config-bucket/google-identity-login-rbac.yaml google-identity-login-rbac.yaml
 	sed -i 's/example-user@google.com/${USER_EMAIL}/' google-identity-login-rbac.yaml
 	sed -i 's/PROJECT_NUMBER/${PROJECT_NUMBER}/' google-identity-login-rbac.yaml
 	kubectl apply -f google-identity-login-rbac.yaml --kubeconfig=/root/bmctl-workspace/${CLUSTER_NAME}/${CLUSTER_NAME}-kubeconfig
@@ -204,9 +204,9 @@ cloud-build-hybrid:  ##       Enable Cloud Build Hybrid
 	@gcloud iam service-accounts add-iam-policy-binding --role roles/iam.workloadIdentityUser --member "serviceAccount:${PROJECT_ID}.svc.id.goog[cloudbuild/default]" cloud-build-hybrid-workload@${PROJECT_ID}.iam.gserviceaccount.com
 	@gcloud iam service-accounts add-iam-policy-binding --role roles/iam.workloadIdentityUser --member "serviceAccount:${PROJECT_ID}.svc.id.goog[cloudbuild-examples/cloud-build-hybrid]" cloud-build-hybrid-workload@${PROJECT_ID}.iam.gserviceaccount.com
 	@gcloud projects add-iam-policy-binding ${PROJECT_ID} --member="serviceAccount:cloud-build-hybrid-workload@${PROJECT_ID}.iam.gserviceaccount.com" --role="roles/cloudkms.cryptoKeyDecrypter"
-	@gsutil cp anthos-features/cloud-build-hybrid/cloud-build-hybrid-rbac.yaml gs://${PROJECT_ID}-abm-config-bucket/cloud-build-hybrid-rbac.yaml
+	@gsutil cp anthos-features/cloud-build-hybrid/cloud-build-hybrid-rbac.yaml gs://${PROJECT_ID}-config-bucket/cloud-build-hybrid-rbac.yaml
 	@gcloud compute ssh root@abm-ws --zone ${ZONE} ${CORP_SETTINGS} << EOF
-	@gsutil cp gs://${PROJECT_ID}-abm-config-bucket/cloud-build-hybrid-rbac.yaml cloud-build-hybrid-rbac.yaml
+	@gsutil cp gs://${PROJECT_ID}-config-bucket/cloud-build-hybrid-rbac.yaml cloud-build-hybrid-rbac.yaml
 	@kubectl -n cloudbuild annotate serviceaccount default iam.gke.io/gcp-service-account=cloud-build-hybrid-workload@${PROJECT_ID}.iam.gserviceaccount.com --overwrite=true --kubeconfig=/root/bmctl-workspace/${CLUSTER_NAME}/${CLUSTER_NAME}-kubeconfig
 	@kubectl apply -f cloud-build-hybrid-rbac.yaml --kubeconfig=/root/bmctl-workspace/${CLUSTER_NAME}/${CLUSTER_NAME}-kubeconfig
 	@echo '-----------------------------------------------------------------------------------------------------'
