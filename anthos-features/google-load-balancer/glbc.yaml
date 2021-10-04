@@ -43,7 +43,7 @@ spec:
           name: google-cloud-key
         env:
         - name: GOOGLE_APPLICATION_CREDENTIALS
-          value: /var/secrets/google/key.json
+          value: /var/secrets/google/bm-gcr.json
         resources:
           # Request is set to accommodate this pod alongside the other
           # master components on a single core master.
