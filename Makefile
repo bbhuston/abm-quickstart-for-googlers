@@ -236,7 +236,7 @@ google-load-balancer:  ##     Enable Google Global Load Balancer
 	@sleep 3s
 	gsutil cp -r anthos-features/google-load-balancer gs://${PROJECT_ID}-config-bucket/google-load-balancer
 	@gcloud compute ssh root@abm-ws --zone ${ZONE} ${CORP_SETTINGS} << EOF
-	gsutil cp -r gs://${PROJECT_ID}-config-bucket/google-load-balancer google-load-balancer
+	gsutil cp -r gs://${PROJECT_ID}-config-bucket/google-load-balancer .
 	sed -i 's/PROJECT_ID/${PROJECT_ID}/' google-load-balancer/gce.conf
 	sed -i 's/NETWORK/${VPC}/' google-load-balancer/gce.conf
 	sed -i 's/ZONE/${ZONE}/' google-load-balancer/gce.conf
