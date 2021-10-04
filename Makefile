@@ -237,8 +237,8 @@ google-load-balancer:  ##     Enable Google Global Load Balancer
 	gsutil cp -r anthos-features/google-load-balancer gs://${PROJECT_ID}-config-bucket/google-load-balancer
 	@gcloud compute ssh root@abm-ws --zone ${ZONE} ${CORP_SETTINGS} << EOF
 	gsutil cp -r gs://${PROJECT_ID}-config-bucket/google-load-balancer google-load-balancer
-	sed -i 's/PROJECT/${PROJECT}/' anthos-features/google-load-balancer/gce.conf
-	sed -i 's/NETWORK/${NETWORK}/' anthos-features/google-load-balancer/gce.conf
+	sed -i 's/PROJECT_ID/${PROJECT_ID}/' anthos-features/google-load-balancer/gce.conf
+	sed -i 's/NETWORK/${VPC}/' anthos-features/google-load-balancer/gce.conf
 	sed -i 's/ZONE/${ZONE}/' anthos-features/google-load-balancer/gce.conf
 	kubectl apply -f google-load-balancer/*.yaml --kubeconfig=/root/bmctl-workspace/${CLUSTER_NAME}/${CLUSTER_NAME}-kubeconfig
 	kubectl -n kube-system create secret generic glbc-gcp-key --from-file=bm-gcr.json --kubeconfig=/root/bmctl-workspace/${CLUSTER_NAME}/${CLUSTER_NAME}-kubeconfig
