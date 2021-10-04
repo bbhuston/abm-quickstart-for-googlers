@@ -238,11 +238,11 @@ google-load-balancer:  ##     Enable Google Global Load Balancer
 	@gcloud compute ssh root@abm-ws --zone ${ZONE} ${CORP_SETTINGS} << EOF
 	gsutil cp -r gs://${PROJECT_ID}-config-bucket/google-load-balancer .
 	sed -i 's/PROJECT_ID/${PROJECT_ID}/' google-load-balancer/gce.conf
-	sed -i 's/NETWORK/${VPC}/' google-load-balancer/gce.conf
+	sed -i 's/VPC/${VPC}/' google-load-balancer/gce.conf
 	sed -i 's/ZONE/${ZONE}/' google-load-balancer/gce.conf
 	kubectl apply -f google-load-balancer/*.yaml --kubeconfig=/root/bmctl-workspace/${CLUSTER_NAME}/${CLUSTER_NAME}-kubeconfig
 	kubectl -n kube-system create secret generic glbc-gcp-key --from-file=bm-gcr.json --kubeconfig=/root/bmctl-workspace/${CLUSTER_NAME}/${CLUSTER_NAME}-kubeconfig
-	kubectl -n kube-system create configmap gce-config --from-file=google-load-balancer/gce.conf
+	kubectl -n kube-system create configmap gce-config --from-file=google-load-balancer/gce.conf -kubeconfig=/root/bmctl-workspace/${CLUSTER_NAME}/${CLUSTER_NAME}-kubeconfig
 	#kubectl label nodes <node-name> topology.kubernetes.io/zone=${ZONE}
 	#kubectl label nodes <node-name> topology.kubernetes.io/region=${REGION}
 	EOF
