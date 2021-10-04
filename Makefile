@@ -8,6 +8,7 @@
 
 ZONE=us-central1-a
 REGION=us-central1
+VPC=default
 MACHINE_TYPE=n1-standard-4
 VM_COUNT=10
 ABM_VERSION=1.8.4
