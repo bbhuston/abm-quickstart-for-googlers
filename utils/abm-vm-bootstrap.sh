@@ -127,6 +127,11 @@ virtctl help
 
 echo "Installing vnc package for virtctl"
 apt-get install -y virt-viewer
+
+echo "Installing netstat"
+apt install net-tools
+netstat -v
+
 EOF
 
 # Register the ABM workstation's SSH public key with each VM

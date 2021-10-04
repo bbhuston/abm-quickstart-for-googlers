@@ -224,7 +224,25 @@ anthos-service-mesh:  ##      Enable Anthos Service Mesh
 	curl -LO https://storage.googleapis.com/gke-release/asm/istio-1.10.4-asm.14-linux-amd64.tar.gz
 	tar xzf istio-1.10.4-asm.14-linux-amd64.tar.gz
 	cd istio-1.10.4-asm.14
+	EOF
 
+google-load-balancer:  ##     Enable Google Global Load Balancer
+	@echo '-----------------------------------------------------------------------------------------------------'
+	@echo
+	@echo 	Enabling Google Load Balancing...
+	@echo
+	@echo '-----------------------------------------------------------------------------------------------------'
+	@sleep 3s
+	gsutil cp anthos-features/google-load-balancer gs://${PROJECT_ID}-config-bucket/google-load-balancer
+	@gcloud compute ssh root@abm-ws --zone ${ZONE} ${CORP_SETTINGS} << EOF
+	gsutil cp gs://${PROJECT_ID}-config-bucket/google-load-balancer google-load-balancer
+	sed -i 's/PROJECT/${PROJECT}/' anthos-features/google-load-balancer/gce.conf
+	sed -i 's/NETWORK/${NETWORK}/' anthos-features/google-load-balancer/gce.conf
+	sed -i 's/ZONE/${ZONE}/' anthos-features/google-load-balancer/gce.conf
+	kubectl apply -f google-load-balancer --kubeconfig=/root/bmctl-workspace/${CLUSTER_NAME}/${CLUSTER_NAME}-kubeconfig
+	kubectl -n kube-system create secret generic glbc-gcp-key --from-file=bm-gcr.json --kubeconfig=/root/bmctl-workspace/${CLUSTER_NAME}/${CLUSTER_NAME}-kubeconfig
+	#kubectl label nodes <node-name> topology.kubernetes.io/zone=${ZONE}
+	#kubectl label nodes <node-name> topology.kubernetes.io/region=${REGION}
 	EOF
 
 cloud-build-hybrid:  ##       Enable Cloud Build Hybrid
@@ -400,5 +418,13 @@ connect-to-kubevirt-vm:  ##   SSH/RDP into a KubeVirt VM
 	@sleep 3s
 	@gcloud compute ssh root@abm-ws --zone ${ZONE} ${CORP_SETTINGS} << EOF
 	kubectl get vmi --kubeconfig=/root/bmctl-workspace/${CLUSTER_NAME}/${CLUSTER_NAME}-kubeconfig
-	virtctl vnc ${KUBEVIRT_VM_NAME} --kubeconfig=/root/bmctl-workspace/${CLUSTER_NAME}/${CLUSTER_NAME}-kubeconfig
+	virtctl vnc ${KUBEVIRT_VM_NAME} --port 3389 --kubeconfig=/root/bmctl-workspace/${CLUSTER_NAME}/${CLUSTER_NAME}-kubeconfig
 	EOF
+
+retrieve-kubeconfig:    ##      Generate a local kubeconfig file
+	gcloud container hub memberships get-credentials ${CLUSTER_NAME}
+	kubectl config rename-context connectgateway_${PROJECT_ID}_${CLUSTER_NAME} ${CLUSTER_NAME}
+
+# gcloud compute --project=benhuston-abm firewall-rules create kubevirt-rdp-fw --direction=INGRESS --priority=1000 --network=default --action=ALLOW --rules=tcp:3389 --source-ranges=10.128.0.0/20 --target-tags=abm-demo
+# kubectl proxy svc/windows-server-2012-r2-vm-rdp 4389:3389 --context ${CLUSTER_NAME}
+# curl  https://github.com/kubevirt/kubevirt/releases/download/v0.45.0/virtctl-v0.45.0-darwin-amd64 --output virtctl-v0.45.0-darwin-amd64

@@ -61,6 +61,25 @@ spec:
           image: kubevirt/virtio-container-disk
         name: virtio-container-disk
 
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: KUBEVIRT_IMAGE-vm-rdp
+  namespace: default
+spec:
+  externalTrafficPolicy: Cluster
+  ports:
+  - nodePort: 30294
+    port: 3389
+    protocol: TCP
+    targetPort: 3389
+  selector:
+    kubevirt.io/domain: kubevirt-vm
+  sessionAffinity: None
+  type: NodePort
+
+
 # Utility VM
 ---
 apiVersion: cdi.kubevirt.io/v1alpha1
@@ -126,3 +145,21 @@ spec:
       - containerDisk:
           image: kubevirt/virtio-container-disk
         name: virtio-container-util-disk
+
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: KUBEVIRT_IMAGE-util-vm-rdp
+  namespace: default
+spec:
+  externalTrafficPolicy: Cluster
+  ports:
+  - nodePort: 30294
+    port: 3389
+    protocol: TCP
+    targetPort: 3389
+  selector:
+    kubevirt.io/domain: kubevirt-vm
+  sessionAffinity: None
+  type: NodePort
