@@ -10,6 +10,7 @@ export ZONE=$2
 MACHINE_TYPE=$3
 VM_COUNT=$4
 ABM_VERSION=$5
+NETWORK=$6
 
 # Create list of VM name
 declare -a VMs=()
@@ -30,7 +31,7 @@ do
               --boot-disk-size 200G \
               --boot-disk-type pd-ssd \
               --can-ip-forward \
-              --network default \
+              --network $NETWORK \
               --tags http-server,https-server,abm-demo \
               --min-cpu-platform "Intel Haswell" \
               --scopes cloud-platform \

@@ -24,7 +24,7 @@ Now you are ready to run the following commands from inside your new CloudTop se
 ```
 git clone https://github.com/bbhuston/abm-quickstart-for-googlers.git
 cd abm-quickstart-for-googlers
-git fetch && git checkout v0.1.3
+git fetch && git checkout fix/smartfactory-settings
 ```
 
 ##### Check out available commands 
@@ -44,6 +44,7 @@ make persist-settings -e PROJECT_ID=${PROJECT_ID} -e PROJECT_NUMBER=${PROJECT_NU
 
 ##### Set default GCP Project
 ```
+gcloud auth activate-service-account --project=vz-nonit-np-hp3v-test-mrn-0 --key-file=smartfactory-abm-sa_key.json
 make set-gcp-project
 ```
 
