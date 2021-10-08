@@ -165,6 +165,7 @@ create-abm-cluster:  ##       Create an ABM cluster
 	gsutil cp gs://${PROJECT_ID}-config-bucket/${CLUSTER_NAME}.yaml bmctl-workspace/${CLUSTER_NAME}/${CLUSTER_NAME}.yaml
 	sed -i 's/ABM_VERSION/${ABM_VERSION}/' bmctl-workspace/${CLUSTER_NAME}/${CLUSTER_NAME}.yaml
 	sed -i 's/PROJECT_ID/${PROJECT_ID}/' bmctl-workspace/${CLUSTER_NAME}/${CLUSTER_NAME}.yaml
+	sed -i 's/REGION/${REGION}/' bmctl-workspace/${CLUSTER_NAME}/${CLUSTER_NAME}.yaml
 	if [ ${CLUSTER_NAME} = 'hybrid-cluster-001' ]; then \
 		bmctl create cluster -c ${CLUSTER_NAME} --reuse-bootstrap-cluster; \
 	else \

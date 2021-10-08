@@ -49,7 +49,7 @@ spec:
       - 10.200.0.50-10.200.0.70
   clusterOperations:
     # might need to be this location
-    location: us-central1
+    location: REGION
     projectID: PROJECT_ID
   storage:
     lvpNodeMounts:
