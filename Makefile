@@ -6,7 +6,7 @@
 # SET ANTHOS BARE METAL VARIABLES
 ####################################################################
 
-ZONE=us-east1-a
+ZONE=us-east1-b
 REGION=us-east1
 NETWORK=smartfactory-network
 MACHINE_TYPE=n1-standard-4
