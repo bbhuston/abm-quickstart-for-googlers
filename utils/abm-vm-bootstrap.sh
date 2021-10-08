@@ -31,6 +31,7 @@ do
               --boot-disk-size 200G \
               --boot-disk-type pd-ssd \
               --can-ip-forward \
+              --no-address \
               --network $NETWORK \
               --tags http-server,https-server,abm-demo \
               --min-cpu-platform "Intel Haswell" \
