@@ -6,8 +6,8 @@
 # SET ANTHOS BARE METAL VARIABLES
 ####################################################################
 
-ZONE=us-east1-b
-REGION=us-east1
+ZONE=us-east4-b
+REGION=us-east4
 NETWORK=smartfactory-network
 MACHINE_TYPE=n1-standard-4
 VM_COUNT=6
@@ -138,7 +138,7 @@ create-artifact-registry:  ## Create Artifact Registry
 	@gcloud artifacts repositories describe cloud-build-hybrid-container-registry --location=us
 
 create-config-bucket:  ##     Create Cloud Storage config file bucket
-	@gsutil mb -b on -l us-central1 gs://${PROJECT_ID}-config-bucket/
+	@gsutil mb -b on -l ${REGION} gs://${PROJECT_ID}-config-bucket/
 
 ##@ Preparing ABM Clusters
 
