@@ -34,7 +34,8 @@ do
               --tags http-server,https-server,abm-demo \
               --min-cpu-platform "Intel Haswell" \
               --scopes cloud-platform \
-              --machine-type $MACHINE_TYPE
+              --machine-type $MACHINE_TYPE \
+              --enable-nested-virtualization
     IP=$(gcloud compute instances describe $vm --zone ${ZONE} \
          --format='get(networkInterfaces[0].networkIP)')
     IPs+=("$IP")

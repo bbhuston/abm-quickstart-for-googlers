@@ -346,6 +346,8 @@ test-abm-connection:  ##      Confirm the hybrid cluster is active
 	kubectl cluster-info --kubeconfig=/root/bmctl-workspace/${CLUSTER_NAME}/${CLUSTER_NAME}-kubeconfig
 	kubectl get nodes --kubeconfig=/root/bmctl-workspace/${CLUSTER_NAME}/${CLUSTER_NAME}-kubeconfig
 	virtctl version --kubeconfig=/root/bmctl-workspace/${CLUSTER_NAME}/${CLUSTER_NAME}-kubeconfig
+	echo 'Checking whether nested virtualization is enabled... a non-zero response is necessary for KubeVirt to work'
+	grep -cw vmx /proc/cpuinfo
 	EOF
 
 test-cloud-build:  ##         Run a Cloud Build Hybrid job
