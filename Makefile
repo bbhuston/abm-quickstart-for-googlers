@@ -10,7 +10,7 @@ ZONE=us-central1-a
 REGION=us-central1
 VPC=default
 MACHINE_TYPE=n1-standard-4
-VM_COUNT=10
+VM_COUNT=6
 ABM_VERSION=1.8.4
 ASM_VERSION=asm-178-8
 # Name of default cluster to enable Anthos features on
