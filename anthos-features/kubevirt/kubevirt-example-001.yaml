@@ -155,7 +155,7 @@ metadata:
 spec:
   externalTrafficPolicy: Cluster
   ports:
-  - nodePort: 30294
+  - nodePort: 30295
     port: 3389
     protocol: TCP
     targetPort: 3389
